@@ -1,0 +1,50 @@
+services:
+  barracuda-onboard-jetson:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PLATFORM: jetson
+    user: root
+    privileged: true
+    image: barracuda-onboard-jetson
+    container_name: barracuda-onboard-jetson
+    tty: true
+    network_mode: host
+    # ipc: host
+    volumes:
+      - ${PWD}/src:${HOME}/ros2_ws/src
+
+  barracuda-onboard-pi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PLATFORM: pi
+    user: root
+    privileged: true
+    image: barracuda-onboard-pi
+    container_name: barracuda-onboard-pi
+    tty: true
+    network_mode: host
+    # ipc: host
+    volumes:
+      - ${PWD}/src:${HOME}/ros2_ws/src
+    profiles: ["pi"]
+
+  barracda-onboard-laptop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: root
+    privileged: true
+    image: barracuda-onboard-laptop
+    container_name: barracuda-onboard-laptop
+    tty: true
+    # network_mode: host
+    # ipc: host
+    ports:
+      - 8765:8765
+    volumes:
+      - ${PWD}/src:${HOME}/ros2_ws/src
+    profiles: ["laptop-dev"]
