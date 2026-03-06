@@ -1,0 +1,4 @@
+[submodule "src/barracuda_thrusters"]
+	path = src/barracuda_thrusters
+	url = git@github.com:usc-robosub/barracuda-thrusters.git
+	branch = ros2-pkg-pi
