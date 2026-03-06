@@ -5,3 +5,7 @@
 [submodule "src/thruster_manager"]
 	path = src/thruster_manager
 	url = git@github.com:CentraleNantesROV/thruster_manager.git
+[submodule "src/barracuda_control"]
+	path = src/barracuda_control
+	url = git@github.com:usc-robosub/barracuda-control.git
+	branch = ros2-pkg
