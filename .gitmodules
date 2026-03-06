@@ -9,3 +9,7 @@
 	path = src/barracuda_control
 	url = git@github.com:usc-robosub/barracuda-control.git
 	branch = ros2-pkg
+[submodule "src/barracuda_description"]
+	path = src/barracuda_description
+	url = git@github.com:usc-robosub/barracuda-description.git
+	branch = ros2-pkg
