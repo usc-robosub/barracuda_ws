@@ -2,3 +2,6 @@
 	path = src/barracuda_thrusters
 	url = git@github.com:usc-robosub/barracuda-thrusters.git
 	branch = ros2-pkg-pi
+[submodule "src/thruster_manager"]
+	path = src/thruster_manager
+	url = git@github.com:CentraleNantesROV/thruster_manager.git
