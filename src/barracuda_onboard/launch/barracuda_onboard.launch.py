@@ -50,6 +50,7 @@ def generate_launch_description():
                 include_launch_description(
                     "foxglove_bridge", "foxglove_bridge_launch.xml"
                 ),
+                include_launch_description("barracuda_control", "joystick_wrench_controller.launch.py"),
                 node_thruster_manager,
             ]
         )
