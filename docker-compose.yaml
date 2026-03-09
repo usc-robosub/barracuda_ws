@@ -32,10 +32,12 @@ services:
       - ${PWD}/src:${HOME}/ros2_ws/src
     profiles: ["pi"]
 
-  barracda-onboard-laptop:
+  barracuda-onboard-laptop:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        PLATFORM: laptop
     user: root
     privileged: true
     image: barracuda-onboard-laptop

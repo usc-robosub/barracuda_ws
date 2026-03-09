@@ -47,22 +47,29 @@ def generate_launch_description():
     if getenv("PLATFORM") == "jetson":
         return LaunchDescription(
             [
-                include_launch_description(
-                    "foxglove_bridge", "foxglove_bridge_launch.xml"
-                ),
+                include_launch_description("foxglove_bridge", "foxglove_bridge_launch.xml"),
                 include_launch_description("barracuda_description", "rsp.launch.py"),
                 include_launch_description("barracuda_control", "joystick_wrench_controller.launch.py"),
+                include_launch_description("barracuda_dvl", "dvl.launch.py"),
                 node_thruster_manager,
             ]
         )
     elif getenv("PLATFORM") == "pi":
         return LaunchDescription(
             [
-                include_launch_description(
-                    "foxglove_bridge", "foxglove_bridge_launch.xml"
-                ),
-                include_launch_description(
-                    "barracuda_thrusters", "barracuda_thrusters_launch.py"
-                ),
+                include_launch_description("foxglove_bridge", "foxglove_bridge_launch.xml"),
+                include_launch_description("barracuda_thrusters", "barracuda_thrusters_launch.py"),
+            ]
+        )
+
+    elif getenv("PLATFORM") == "laptop":
+        return LaunchDescription(
+            [
+                include_launch_description("foxglove_bridge", "foxglove_bridge_launch.xml"),
+                include_launch_description("barracuda_thrusters", "barracuda_thrusters_launch.py"),
+                include_launch_description("barracuda_description", "rsp.launch.py"),
+                include_launch_description("barracuda_control", "joystick_wrench_controller.launch.py"),
+                include_launch_description("barracuda_dvl", "dvl.launch.py"),
+                node_thruster_manager,
             ]
         )
