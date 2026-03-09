@@ -8,6 +8,8 @@ echo "============================"
 echo " Barracuda Workspace Ready! "
 echo "============================"
 
+ros2 daemon stop
+ros2 daemon start
 ros2 launch barracuda_onboard barracuda_onboard.launch.py
 
 exec "$@"
