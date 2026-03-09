@@ -1,10 +1,10 @@
 services:
-  barracuda-onboard-jetson:
+  jetson:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        PLATFORM: jetson
+    environment:
+      PLATFORM: jetson
     user: root
     privileged: true
     image: barracuda-onboard-jetson
@@ -13,14 +13,17 @@ services:
     network_mode: host
     # ipc: host
     volumes:
-      - ${PWD}/src:${HOME}/ros2_ws/src
+      - ${PWD}/src:/root/ros2_ws/src
 
-  barracuda-onboard-pi:
+  pi:
     build:
       context: .
       dockerfile: Dockerfile
+      # pi platform arg needed at build time so we can build a smaller image for it (only dependencies needed for barracuda-thrusters)
       args:
         PLATFORM: pi
+    environment:
+      PLATFORM: pi
     user: root
     privileged: true
     image: barracuda-onboard-pi
@@ -29,15 +32,15 @@ services:
     network_mode: host
     # ipc: host
     volumes:
-      - ${PWD}/src:${HOME}/ros2_ws/src
+      - ${PWD}/src:/root/ros2_ws/src
     profiles: ["pi"]
 
-  barracuda-onboard-laptop:
+  laptop:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        PLATFORM: laptop
+    environment:
+      PLATFORM: laptop
     user: root
     privileged: true
     image: barracuda-onboard-laptop
@@ -48,5 +51,5 @@ services:
     ports:
       - 8765:8765
     volumes:
-      - ${PWD}/src:${HOME}/ros2_ws/src
-    profiles: ["laptop-dev"]
+      - ${PWD}/src:/root/ros2_ws/src
+    profiles: ["laptop"]
