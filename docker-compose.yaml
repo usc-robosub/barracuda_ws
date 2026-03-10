@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     environment:
       PLATFORM: jetson
+      ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
     image: barracuda-onboard-jetson
@@ -24,6 +25,7 @@ services:
         PLATFORM: pi
     environment:
       PLATFORM: pi
+      ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
     image: barracuda-onboard-pi
@@ -41,6 +43,7 @@ services:
       dockerfile: Dockerfile
     environment:
       PLATFORM: laptop
+      ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
     image: barracuda-onboard-laptop
