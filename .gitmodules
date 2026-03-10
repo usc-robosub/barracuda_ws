@@ -17,3 +17,7 @@
 	path = src/barracuda_dvl
 	url = https://github.com/usc-robosub/barracuda-dvl.git
 	branch = ros2-pkg
+[submodule "src/barracuda_ping_360"]
+	path = src/barracuda_ping_360
+	url = git@github.com:usc-robosub/barracuda-ping-360.git
+	branch = ros2-pkg
