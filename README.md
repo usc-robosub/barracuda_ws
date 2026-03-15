@@ -1,5 +1,9 @@
 # barracuda_ws
-ROS2 workspace with all of the packages used by the onboard Jetson included as submodules, as well as the barracuda_onboard package, which contains the launch file that launches all of the nodes that run on the Jetson. The package repos are structured as pure colcon packages (the package.xml file should be in the top level of the repo, see https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
+ROS2 workspace with all of the packages used by the onboard Jetson included as submodules, as well as the barracuda_onboard package, which contains the launch file that launches all of the nodes that run on the Jetson. 
+
+## ROS2 package repo strucure  
+* The package repos are structured as pure colcon packages (the package.xml file should be in the top level of the repo, see https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html)
+* Dependencies should be specified in package.xml -  ``` rosdep install ``` is run in the Dockerfile to install system dependencies (see https://docs.ros.org/en/humble/Tutorials/Intermediate/Rosdep.html)
 
 ## Setting up your development environment on the Jetson
 1. Create an admin account for yourself and log in
