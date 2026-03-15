@@ -8,34 +8,13 @@ services:
       ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
-    image: barracuda-onboard-jetson
-    container_name: barracuda-onboard-jetson
+    image: ${USER}-barracuda-onboard-jetson
+    container_name: ${USER}-barracuda-onboard-jetson
     tty: true
     network_mode: host
     # ipc: host
     volumes:
       - ${PWD}/src:/root/ros2_ws/src
-
-  pi:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      # pi platform arg needed at build time so we can build a smaller image for it (only dependencies needed for barracuda-thrusters)
-      args:
-        PLATFORM: pi
-    environment:
-      PLATFORM: pi
-      ROS_DOMAIN_ID: "0"
-    user: root
-    privileged: true
-    image: barracuda-onboard-pi
-    container_name: barracuda-onboard-pi
-    tty: true
-    network_mode: host
-    # ipc: host
-    volumes:
-      - ${PWD}/src:/root/ros2_ws/src
-    profiles: ["pi"]
 
   laptop:
     build:
