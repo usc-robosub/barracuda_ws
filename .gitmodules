@@ -1,4 +1,5 @@
 [submodule "src/barracuda_thrusters"]
+	path = src/barracuda_thrusters
 	url = git@github.com:usc-robosub/barracuda_thrusters.git
 	branch = ros2-pkg-jetson
 [submodule "src/thruster_manager"]
