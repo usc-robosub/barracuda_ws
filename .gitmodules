@@ -6,11 +6,11 @@
 	url = git@github.com:CentraleNantesROV/thruster_manager.git
 [submodule "src/barracuda_control"]
 	path = src/barracuda_control
-	url = git@github.com:usc-robosub/barracuda-control.git
+	url = git@github.com:usc-robosub/barracuda_control.git
 	branch = ros2-pkg
 [submodule "src/barracuda_description"]
 	path = src/barracuda_description
-	url = git@github.com:usc-robosub/barracuda-description.git
+	url = git@github.com:usc-robosub/barracuda_description.git
 	branch = ros2-pkg
 [submodule "src/barracuda_dvl"]
 	path = src/barracuda_dvl
