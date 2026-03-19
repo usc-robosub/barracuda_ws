@@ -2,9 +2,6 @@
 	path = src/barracuda_thrusters
 	url = git@github.com:usc-robosub/barracuda_thrusters.git
 	branch = ros2-pkg-jetson
-[submodule "src/thruster_manager"]
-	path = src/thruster_manager
-	url = git@github.com:CentraleNantesROV/thruster_manager.git
 [submodule "src/barracuda_control"]
 	path = src/barracuda_control
 	url = git@github.com:usc-robosub/barracuda_control.git
@@ -17,3 +14,6 @@
 	path = src/barracuda_dvl
 	url = git@github.com:usc-robosub/barracuda_dvl.git
 	branch = ros2-pkg
+[submodule "src/thruster_manager"]
+	path = src/thruster_manager
+	url = git@github.com:usc-robosub/cnrov_thruster_manager.git
