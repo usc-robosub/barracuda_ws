@@ -3,19 +3,37 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        PKG_SEL: ${PKG_SEL:-}
     environment:
-      PLATFORM: jetson
       ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
-    image: ${USER}-barracuda-onboard-jetson
-    container_name: ${USER}-barracuda-onboard-jetson
+    image: ${USER}-barracuda-onboard-jetson${IMG_ID:+-${IMG_ID}}
+    container_name: ${USER}-barracuda-onboard-jetson${IMG_ID:+-${IMG_ID}}
     tty: true
     network_mode: host
     # ipc: host
     volumes:
       - ${PWD}/src:/root/ros2_ws/src
 
+  jetson-no-launch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NO_LAUNCH: true
+      ROS_DOMAIN_ID: "0"
+    user: root
+    privileged: true
+    image: ${USER}-barracuda-onboard-jetson
+    container_name: ${USER}-barracuda-onboard-jetson-no-launch
+    tty: true
+    network_mode: host
+    # ipc: host
+    volumes:
+      - ${PWD}/src:/root/ros2_ws/src
+    profiles: ["jetson-no-launch"]
   laptop:
     build:
       context: .
