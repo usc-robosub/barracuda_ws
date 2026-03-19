@@ -1,5 +1,29 @@
+###########################################################################
+# docker compose services: host, host-no-launch, bridge, bridge-no-launch #
+###########################################################################
+
+# the services are first split up by network mode, then by launch behavior:
+ 
+# when running a container on the jetson, we use the host networking mode
+# so other devices (e.g. sensors,land computer running foxglove) can access
+# the container via their network connection to the jetson
+
+# when running a container on a machine where we want another program on the
+# same machine to be able to connect to the container over the network (a use
+# case for this would be connecting foxglove running locally to
+# a container also running locally), we use the bridge networking mode
+
+# the host and bridge services will spin up a container that automatically
+# launches barracuda_onboard.launch.py (which includes the launch files for
+# all packages, or the packages specified by PKG_SEL if that environment var
+# is set - see the readme for more on PKG_SEL)
+
+# the x-no-launch services will not launch anything upon spinning up the container -
+# these services set the NO_LAUNCH environment var, which entrypoint.sh checks to
+# determine the launch behavior (when it's set the ros2 launch call gets skipped)
+
 services:
-  jetson:
+  host:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,47 +33,31 @@ services:
       ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
-    image: ${USER}-barracuda-onboard-jetson${IMG_ID:+-${IMG_ID}}
-    container_name: ${USER}-barracuda-onboard-jetson${IMG_ID:+-${IMG_ID}}
+    image: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
+    container_name: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
     tty: true
     network_mode: host
     # ipc: host
     volumes:
       - ${PWD}/src:/root/ros2_ws/src
 
-  jetson-no-launch:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  host-no-launch:
+    extends: host
     environment:
       NO_LAUNCH: true
       ROS_DOMAIN_ID: "0"
-    user: root
-    privileged: true
-    image: ${USER}-barracuda-onboard-jetson
-    container_name: ${USER}-barracuda-onboard-jetson-no-launch
-    tty: true
-    network_mode: host
-    # ipc: host
-    volumes:
-      - ${PWD}/src:/root/ros2_ws/src
-    profiles: ["jetson-no-launch"]
-  laptop:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      PLATFORM: laptop
-      ROS_DOMAIN_ID: "0"
-    user: root
-    privileged: true
-    image: barracuda-onboard-laptop
-    container_name: barracuda-onboard-laptop
-    tty: true
-    # network_mode: host
-    # ipc: host
+    profiles: ["host-no-launch"]
+
+  bridge:
+    extends: host
+    network_mode: bridge
     ports:
       - 8765:8765
-    volumes:
-      - ${PWD}/src:/root/ros2_ws/src
-    profiles: ["laptop"]
+    profiles: ["bridge"]
+
+  bridge-no-launch:
+    extends: bridge
+    environment:
+      NO_LAUNCH: true
+      ROS_DOMAIN_ID: "0"
+    profiles: ["bridge-no-launch"]
