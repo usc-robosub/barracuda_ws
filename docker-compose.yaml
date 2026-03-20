@@ -22,6 +22,7 @@
 # these services set the NO_LAUNCH environment var, which entrypoint.sh checks to
 # determine the launch behavior (when it's set the ros2 launch call gets skipped)
 
+# default service is "host"
 services:
   host:
     build:
