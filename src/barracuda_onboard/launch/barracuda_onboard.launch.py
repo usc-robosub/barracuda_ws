@@ -28,7 +28,7 @@ def include_launch_description(package, launchfile):
 
 
 # scan workspace src dir, make a list of all package names except for barracuda_onboard
-pkgs = [pkg for pkg in os.listdir("/root/ros2_ws/src") if pkg != "barracuda_onboard"]
+pkgs = [pkg for pkg in os.listdir("/root/barracuda_ws/src") if pkg != "barracuda_onboard"]
 
 
 # if PKG_SEL env var is set, only include packages specified by PKG_SEL in pkg list

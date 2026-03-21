@@ -2,7 +2,7 @@
 set -e
 
 source /opt/ros/humble/setup.bash
-source /root/ros2_ws/install/setup.bash
+source /root/barracuda_ws/install/setup.bash
 
 echo "============================"
 echo " Barracuda Workspace Ready! "

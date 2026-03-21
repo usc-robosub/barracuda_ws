@@ -41,7 +41,7 @@ services:
     network_mode: host
     # ipc: host
     volumes:
-      - ${PWD}/src:/root/ros2_ws/src
+      - ${PWD}/src:/root/barracuda_ws/src
 
   host-no-launch:
     extends: host

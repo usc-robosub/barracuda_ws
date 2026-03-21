@@ -13,24 +13,24 @@ RUN apt-get update && apt-get install -y \
     && rm -rf helix-25.07.1-$(uname -m)-linux
             
 
-COPY src /root/ros2_ws/src
+COPY src /root/barracuda_ws/src
 
 ARG PKG_SEL
 ENV PKG_SEL=$PKG_SEL
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
-    && echo "[ -f ~/ros2_ws/install/setup.bash ] && source ~/ros2_ws/install/setup.bash" >> ~/.bashrc \
+    && echo "[ -f ~/barracuda_ws/install/setup.bash ] && source ~/barracuda_ws/install/setup.bash" >> ~/.bashrc \
     && . /opt/ros/humble/setup.sh \
     # && apt-get update \
     # && rosdep update \
-    && cd ~/ros2_ws \
+    && cd ~/barracuda_ws \
     && if [ -n "$PKG_SEL" ]; \
-    then cd ~/ros2_ws/src && rosdep install --from-paths barracuda_onboard $PKG_SEL -y --ignore-src && cd ~/ros2_ws && colcon build --symlink-install --packages-select barracuda_onboard $PKG_SEL; \
-    else cd ~/ros2_ws/src && rosdep install --from-paths . -y --ignore-src && cd ~/ros2_ws && colcon build --symlink-install; \
+    then cd ~/barracuda_ws/src && rosdep install --from-paths barracuda_onboard $PKG_SEL -y --ignore-src && cd ~/barracuda_ws && colcon build --symlink-install --packages-select barracuda_onboard $PKG_SEL; \
+    else cd ~/barracuda_ws/src && rosdep install --from-paths . -y --ignore-src && cd ~/barracuda_ws && colcon build --symlink-install; \
     fi \
     && rm -rf /var/lib/apt/lists/*
 
 
-WORKDIR /root/ros2_ws/
+WORKDIR /root/barracuda_ws/
 
 COPY entrypoint.sh /root/entrypoint.sh
 CMD [ "/bin/bash", "/root/entrypoint.sh" ]
