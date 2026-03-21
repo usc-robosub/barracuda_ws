@@ -1,3 +1,6 @@
 [submodule "src/thruster_manager"]
 	path = src/thruster_manager
 	url = git@github.com:usc-robosub/cnrov_thruster_manager.git
+[submodule "third-party/foxglove-sdk"]
+	path = third-party/foxglove-sdk
+	url = https://github.com/foxglove/foxglove-sdk.git
