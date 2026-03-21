@@ -20,13 +20,12 @@ ENV PKG_SEL=$PKG_SEL
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
     && echo "[ -f ~/barracuda_ws/install/setup.bash ] && source ~/barracuda_ws/install/setup.bash" >> ~/.bashrc \
     && . /opt/ros/humble/setup.sh \
-    # && apt-get update \
     # && rosdep update \
-    && cd ~/barracuda_ws \
-    && if [ -n "$PKG_SEL" ]; \
-    then cd ~/barracuda_ws/src && rosdep install --from-paths barracuda_onboard $PKG_SEL -y --ignore-src && cd ~/barracuda_ws && colcon build --symlink-install --packages-select barracuda_onboard $PKG_SEL; \
-    else cd ~/barracuda_ws/src && rosdep install --from-paths . -y --ignore-src && cd ~/barracuda_ws && colcon build --symlink-install; \
-    fi \
+    && cd /root/barracuda_ws/src \
+    && export PKG_PATHS=${PKG_SEL:+barracuda_onboard $PKG_SEL} \
+    && rosdep install --from-paths ${PKG_PATHS:-"."} -y --ignore-src" \
+    && cd /root/barracuda_ws \
+    && colcon build --symlink-install ${PKG_PATHS:+--packages-select $PKG_PATHS} \
     && rm -rf /var/lib/apt/lists/*
 
 
