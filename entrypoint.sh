@@ -10,6 +10,10 @@ echo "============================"
 
 ros2 daemon stop
 ros2 daemon start
+if [ -n "${IMG_ID}" ]
+then echo "IMG_ID environment variable set: ${IMG_ID}"
+fi
+
 if [ -n "${PKG_SEL}" ]
 then echo "PKG_SEL environment variable set: ${PKG_SEL}"
 fi

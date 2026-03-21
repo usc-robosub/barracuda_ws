@@ -31,6 +31,7 @@ services:
       args:
         PKG_SEL: ${PKG_SEL:-}
     environment:
+      IMG_ID: ${IMG_ID:-}
       ROS_DOMAIN_ID: "0"
     user: root
     privileged: true
