@@ -20,6 +20,7 @@ ENV PKG_SEL=$PKG_SEL
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
     && echo "[ -f ~/ros2_ws/install/setup.bash ] && source ~/ros2_ws/install/setup.bash" >> ~/.bashrc \
     && . /opt/ros/humble/setup.sh \
+    # && apt-get update \
     # && rosdep update \
     && cd ~/ros2_ws \
     && if [ -n "$PKG_SEL" ]; \
