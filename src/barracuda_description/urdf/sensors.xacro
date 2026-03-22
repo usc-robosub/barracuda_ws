@@ -1,0 +1,289 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Macro for the IMU -->
+    <xacro:macro name="imu_sensor" params="parent_link imu_name namespace">
+        <!-- IMU Link -->
+        <link name="${namespace}/${imu_name}_link">
+        </link>
+
+        <!-- Fixed Joint to Attach the IMU -->
+        <joint name="${namespace}/${imu_name}_joint" type="fixed">
+            <parent link="${parent_link}" />
+            <child link="${namespace}/${imu_name}_link" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <!-- IMU Sensor -->
+        <gazebo reference="${namespace}/${imu_name}_link">
+            <gravity>true</gravity>
+            <sensor name="${imu_name}_sensor" type="imu">
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <visualize>true</visualize>
+                <topic>${namespace}/${imu_name}/data</topic>
+                <plugin filename="libgazebo_ros_imu_sensor.so" name="${imu_name}_plugin">
+                    <topicName>${namespace}/${imu_name}/data</topicName>
+                    <bodyName>${namespace}/${imu_name}_link</bodyName>
+                    <updateRateHZ>100.0</updateRateHZ>
+                    <gaussianNoise>2e-4</gaussianNoise>
+                    <xyzOffset>0 0 0</xyzOffset>
+                    <rpyOffset>0 0 0</rpyOffset>
+                    <frameName>${namespace}/${imu_name}_link</frameName>
+                    <initialOrientationAsReference>false</initialOrientationAsReference>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <!-- Macro for single sonar for the DVL  -->
+    <xacro:macro name="dvl_single_sonar" params="namespace dvl_name index pitch yaw update_rate">
+        <link name="${namespace}/${dvl_name}_sonar${index}_link">
+            <inertial>
+                <mass value="0.001" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <inertia ixx="0.000000017" ixy="0" ixz="0" iyy="0.000000017" iyz="0" izz="0.000000017" />
+            </inertial>
+        </link>
+
+        <joint name="${namespace}/${dvl_name}_sonar${index}_joint" type="revolute">
+            <origin xyz="0 0 0" rpy="0 ${pitch} ${yaw}" />
+            <parent link="${namespace}/${dvl_name}_link" />
+            <child link="${namespace}/${dvl_name}_sonar${index}_link" />
+            <limit upper="0" lower="0" effort="0" velocity="0" />
+            <axis xyz="1 0 0" />
+        </joint>
+
+        <gazebo reference="${namespace}/${dvl_name}_sonar${index}_link">
+            <sensor type="ray" name="${dvl_name}_sonar${index}">
+                <pose>0 0 0 0 0 0</pose>
+                <update_rate>${update_rate}</update_rate>
+                <visualize>true</visualize>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>3</samples>
+                            <resolution>1</resolution>
+                            <min_angle>-0.025</min_angle>
+                            <max_angle>0.025</max_angle>
+                        </horizontal>
+                        <vertical>
+                            <samples>3</samples>
+                            <resolution>1</resolution>
+                            <min_angle>-0.025</min_angle>
+                            <max_angle>0.025</max_angle>
+                        </vertical>
+                    </scan>
+                    <range>
+                        <min>0.05</min>
+                        <max>50</max>
+                        <resolution>0.01</resolution>
+                    </range>
+                </ray>
+
+                <plugin filename="libgazebo_ros_range.so" name="${dvl_name}_sonar${index}">
+                    <gaussianNoise>0.005</gaussianNoise>
+                    <alwaysOn>true</alwaysOn>
+                    <updateRate>${update_rate}</updateRate>
+                    <topicName>${namespace}/${dvl_name}_sonar${index}</topicName>
+                    <frameName>${namespace}/${dvl_name}_sonar${index}_link</frameName>
+                    <fov>0.05</fov>
+                    <radiation>ultrasound</radiation>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <!-- Macro for the DVL -->
+    <xacro:macro name="dvl" params="parent_link dvl_name namespace">
+        <!-- DVL Link -->
+        <link name="${namespace}/${dvl_name}_link">
+            <inertial>
+                <mass value="0.105" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <inertia ixx="0.071732122" ixy="0" ixz="0" iyy="0.071732122" iyz="0" izz="0.055786544" />
+            </inertial>
+            <visual>
+                <geometry>
+                    <mesh filename="file://$(find barracuda_description)/meshes/dvl.dae">
+                        <pose>0 0 0 0 1.5707963267948966 0</pose>
+                    </mesh>
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 1.5707963267948966 0" />
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder length="0.025" radius="0.033" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 1.5707963267948966 0" />
+            </collision>
+        </link>
+
+        <!-- Fixed joint to attach the DVL-->
+        <joint name="${namespace}/${dvl_name}_joint" type="fixed">
+            <parent link="${parent_link}" />
+            <child link="${namespace}/${dvl_name}_link" />
+            <origin xyz="0 0 -0.15" rpy="0 ${0.5*pi} 0" />
+        </joint>
+
+        <!-- DVL sonars -->
+        <xacro:dvl_single_sonar
+            namespace="${namespace}" dvl_name="${dvl_name}"
+            index="0" pitch="-0.4363" yaw="0.0" update_rate="10">
+    </xacro:dvl_single_sonar>
+
+    <xacro:dvl_single_sonar
+        namespace="${namespace}" dvl_name="${dvl_name}"
+        index="1" pitch="0.0" yaw="0.4363" update_rate="10">
+</xacro:dvl_single_sonar>
+
+
+<xacro:dvl_single_sonar
+    namespace="${namespace}" dvl_name="${dvl_name}"
+    index="2" pitch="0.4363" yaw="0.0" update_rate="10">
+    </xacro:dvl_single_sonar>
+
+
+    <xacro:dvl_single_sonar
+        namespace="${namespace}" dvl_name="${dvl_name}"
+        index="3" pitch="0.0" yaw="-0.4363" update_rate="10">
+</xacro:dvl_single_sonar>
+
+<!-- DVL Sensor-->
+<gazebo>
+    <plugin filename="libuuv_gazebo_ros_dvl_plugin.so" name="libuuv_gazebo_dvl_plugin">
+        <robot_namespace>${namespace}</robot_namespace>	<!-- ROS topic & link namespace -->
+        <link_name>${parent_link}</link_name> <!-- (string, required): name of the body which holds
+        the IMU sensor -->
+        <sensor_topic>${dvl_name}</sensor_topic> 		<!-- name of the sensor data ROS topic -->
+        <update_rate>10</update_rate>		<!-- Hertz (should match beam plugin specs) -->
+        <noise_sigma>0.005</noise_sigma>		<!-- Only used for coviariance matrix -->
+        <noise_amplitude>0.005</noise_amplitude>	<!-- Gaussian noise added to velocity vector
+        components -->
+        <enable_gazebo_messages>false</enable_gazebo_messages>
+        <enable_local_ned_frame>false</enable_local_ned_frame>  <!-- Can use if a global NED frame is
+        available -->
+        <static_reference_frame>world</static_reference_frame>
+        <!-- Declaring the links associated with individual sonar beams (see below)-->
+        <beam_link_name_0>${namespace}/${dvl_name}_sonar0_link</beam_link_name_0>
+        <beam_link_name_1>${namespace}/${dvl_name}_sonar1_link</beam_link_name_1>
+        <beam_link_name_2>${namespace}/${dvl_name}_sonar2_link</beam_link_name_2>
+        <beam_link_name_3>${namespace}/${dvl_name}_sonar3_link</beam_link_name_3>
+        <!-- Declaring the individual sonar beam output ROS range topics -->
+        <beam_topic_0>${dvl_name}_sonar0</beam_topic_0>
+        <beam_topic_1>${dvl_name}_sonar1</beam_topic_1>
+        <beam_topic_2>${dvl_name}_sonar2</beam_topic_2>
+        <beam_topic_3>${dvl_name}_sonar3</beam_topic_3>
+    </plugin>
+</gazebo>
+
+  </xacro:macro>
+
+  <!-- Macro for the Imaging Sonar -->
+  <xacro:macro name="lidar" params="parent_link lidar_name namespace">
+      <!-- Imaging Sonar Link -->
+      <link name="${namespace}/${lidar_name}_link">
+          <inertial>
+              <origin xyz="0 0 0" rpy="0 0 0" />
+              <mass value="0.125" />
+              <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+          </inertial>
+      </link>
+
+      <!-- Fixed Joint to Attach the Imaging Sonar -->
+      <joint name="${namespace}/${lidar_name}_joint" type="fixed">
+          <parent link="${parent_link}" />
+          <child link="${namespace}/${lidar_name}_link" />
+          <origin xyz="0 0 0.2" rpy="0 0 0" />
+      </joint>
+
+      <link name="sonar_frame"/>
+
+      <joint name="${namespace}/${lidar_name}_sonar_frame_joint" type="fixed">
+          <parent link="${namespace}/${lidar_name}_link" />
+          <child link="sonar_frame" />
+          <origin xyz="0 0 0" rpy="0 0 0" />
+      </joint>
+
+      <!-- Imaging Sonar Sensor -->
+      <gazebo reference="${namespace}/${lidar_name}_link">
+          <sensor type="ray" name="${lidar_name}_sensor">
+              <pose> 0 0 0 0 0 0 </pose>
+              <visualize>true</visualize>
+              <!-- Scan speed of actual sensor depends on range setting -->
+              <update_rate>10</update_rate>
+              <ray>
+                  <scan>
+                      <horizontal>
+                          <!-- Assuming 360 for now, might be 400 if sensor uses gradians -->
+                          <samples>360</samples>
+                          <min_angle>-3.14</min_angle>
+                          <max_angle>3.14</max_angle>
+                      </horizontal>
+                  </scan>
+                  <range>
+                      <min>0.75</min>
+                      <max>50</max>
+                  </range>
+              </ray>
+              <plugin filename="libgazebo_ros_laser.so" name="imaging_sonar">
+                  <topicName>${namespace}/sonar/scan</topicName>
+                  <frameName>${namespace}/${lidar_name}_link</frameName>
+              </plugin>
+          </sensor>
+      </gazebo>
+  </xacro:macro>
+
+  <!-- Macro for the Altimeter Sonar -->
+  <xacro:macro name="altimeter" params="parent_link altimeter_name namespace">
+      <!-- Altimeter Sonar Link -->
+      <link name="${namespace}/${altimeter_name}_link">
+          <inertial>
+              <origin xyz="0 0 0" rpy="0 0 0" />
+              <mass value="0.1" />
+              <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+          </inertial>
+      </link>
+
+      <!-- Fixed Joint to Attach the Altimeter Sonar -->
+      <joint name="${namespace}/${altimeter_name}_joint" type="fixed">
+          <parent link="${parent_link}" />
+          <child link="${namespace}/${altimeter_name}_link" />
+          <origin xyz="0 0 0" rpy="0 ${0.5*pi} 0" />
+      </joint>
+
+      <!-- Altimaeter Sonar Sensor -->
+      <gazebo reference="${namespace}/${altimeter_name}_link">
+          <sensor type="ray" name="${altimeter_name}_sensor">
+              <pose> 0 0 0 0 0 0 </pose>
+              <visualize>true</visualize>
+              <!-- Not quite sure what this value should be, could depend on baud rate of sensor -->
+              <update_rate>10</update_rate>
+              <ray>
+                  <scan>
+                      <horizontal>
+                          <samples>1</samples>
+                      </horizontal>
+                      <vertical>
+                          <samples>1</samples>
+                      </vertical>
+                  </scan>
+                  <range>
+                      <min>0.3</min>
+                      <max>100</max>
+                  </range>
+              </ray>
+              <plugin filename="libgazebo_ros_range.so" name="altimeter_sonar">
+                  <gaussianNoise>0.005</gaussianNoise>
+                  <alwaysOn>true</alwaysOn>
+                  <updateRate>10</updateRate>
+                  <topicName>${namespace}/depth</topicName>
+                  <frameName>${namespace}/${altimeter_name}_link</frameName>
+                  <fov>0.05</fov>
+                  <radiation>ultrasound</radiation>
+              </plugin>
+          </sensor>
+      </gazebo>
+  </xacro:macro>
+
+</robot>

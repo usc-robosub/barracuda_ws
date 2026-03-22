@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    max_force: 5.0
+    max_torque: 5.0

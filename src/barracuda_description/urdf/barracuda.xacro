@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<robot name="barracuda" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:arg name="debug" default="0"/>
+    <xacro:arg name="namespace" default="barracuda"/>
+
+    <xacro:include filename="$(find barracuda_description)/urdf/common.urdf.xacro"/>
+    <xacro:include filename="$(find barracuda_description)/urdf/thruster_snippets.xacro"/>
+    <xacro:property name="prop_mesh_file" value="file://$(find barracuda_description)/meshes/t200_thruster.dae"/>
+
+    <!-- "Dummy" base link to eliminate root link inertia warning -->
+    <link name="$(arg namespace)/base_link"/>
+
+    <link name="$(arg namespace)/barracuda_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="36.3"/>
+            <inertia
+                ixx="2.5" ixy="0.0" ixz="0.0"
+                iyy="8.0" iyz="0.0"
+                izz="8.5"/>
+        </inertial>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 ${-90*d2r}"/>
+            <geometry>
+                <mesh filename="file://$(find barracuda_description)/meshes/barracuda_base_link.dae" scale="1 1 1"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 ${-90*d2r}"/>
+            <geometry>
+                <mesh filename="file://$(find barracuda_description)/meshes/barracuda_base_link.dae" scale="1 1 1"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="$(arg namespace)/barracuda_base_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="$(arg namespace)/base_link"/>
+        <child link="$(arg namespace)/barracuda_link"/>
+    </joint>
+
+    <xacro:include filename="$(find barracuda_description)/urdf/sensors.xacro"/>
+    <xacro:imu_sensor parent_link="$(arg namespace)/barracuda_link" imu_name="imu" namespace="$(arg namespace)"/>
+    <xacro:dvl parent_link="$(arg namespace)/base_link" dvl_name="dvl" namespace="$(arg namespace)" />
+    <xacro:lidar parent_link="$(arg namespace)/barracuda_link" lidar_name="ping360" namespace="$(arg namespace)" />
+    <xacro:altimeter parent_link="$(arg namespace)/barracuda_link" altimeter_name="ping1d" namespace="$(arg namespace)" />
+
+    <xacro:include filename="$(find barracuda_description)/urdf/depth_camera.xacro"/>
+    <xacro:depth_camera parent_link="$(arg namespace)/barracuda_link" namespace="$(arg namespace)"/>
+
+    <gazebo>
+        <plugin name="uuv_plugin" filename="libuuv_underwater_object_ros_plugin.so">
+            <!-- Hydro parameters for the vehicle-->
+            <fluid_density>1028.0</fluid_density>
+            <flow_velocity_topic>hydrodynamics/current_velocity</flow_velocity_topic>
+            <debug>$(arg debug)</debug>
+
+            <link name="$(arg namespace)/base_link">
+            <neutrally_buoyant>1</neutrally_buoyant>
+            <!-- See eNovus technical specifications -->
+            <volume>0.036</volume> <!-- Volume calculated for 80 lb sub with slight positive buoyancy -->
+            <box>
+                <width>0.75</width>
+                <length>0.64</length>
+                <height>0.39</height>
+            </box>
+            <!-- Center of buoyancy is a guess, using same value as RexRov -->
+            <center_of_buoyancy>0.0 0.0 0.3</center_of_buoyancy>
+            <hydrodynamic_model>
+                <type>fossen</type>
+                <!-- Everything else in the model is pulled straight from Berg2012
+                    (which means it's not even close for this vehicle) -->
+                <!-- Added mass: scaled down for 80 lb submarine -->
+                <added_mass>
+                15.0 -0.1 -2.0  0.2 -3.0 -0.15
+                -0.1  25.0  1.0  8.0 -0.1  1.2
+                -2.0   1.0 70.0  0.1 -7.5  0.2
+                0.2   8.0  0.1  10.0 -0.2  0.4
+                -3.0  -0.1 -7.5 -0.2  16.0 -0.02
+                -0.15  1.2  0.2  0.4 -0.02  4.5
+                </added_mass>
+                <!-- Linear damping: scaled for smaller submarine -->
+                <linear_damping>
+                -15.0 -12.0 -35.0 -25.0 -20.0 -8.0
+                </linear_damping>
+                <!-- Non-linear damping: scaled for smaller submarine -->
+                <quadratic_damping>
+                -50.0 -65.0 -120.0 -45.0 -52.0 -35.0
+                </quadratic_damping>
+            </hydrodynamic_model>
+            </link>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>$(arg namespace)</robotNamespace>
+            <robotParam>robot_description</robotParam>
+        </plugin>
+    </gazebo>
+
+    <xacro:macro name="thruster_macro" params="thruster_id *origin">
+        <xacro:thruster_module_first_order_basic_fcn_macro
+            namespace="$(arg namespace)"
+            thruster_id="${thruster_id}"
+            parent_link="$(arg namespace)/barracuda_link"
+            mesh_filename="${prop_mesh_file}"
+            dyn_time_constant="0.05"
+            rotor_constant="1">
+            <xacro:insert_block name="origin"/>
+        </xacro:thruster_module_first_order_basic_fcn_macro>
+    </xacro:macro>
+
+    <!--left top-->
+    <xacro:thruster_macro thruster_id="3">
+      <origin xyz="0.0 0.322 0.1535" rpy="${90*d2r} ${-90*d2r} ${180*d2r}"/>
+    </xacro:thruster_macro>
+
+    <!--back left-->
+    <xacro:thruster_macro thruster_id="2">
+      <origin xyz="-0.30916 0.36341 0.0" rpy="${90*d2r} ${-45*d2r} ${-131.51*d2r}"/>
+    </xacro:thruster_macro>
+    
+    <!--left mid-->
+    <xacro:thruster_macro thruster_id="1">
+      <origin xyz="-0.00525 0.43515 0.0" rpy="${90*d2r} ${180*d2r} ${180*d2r}"/>
+    </xacro:thruster_macro>
+    
+    <!--front left-->
+    <xacro:thruster_macro thruster_id="0">
+      <origin xyz="0.30916 0.36341 0.0" rpy="${-45*d2r} ${-135*d2r} ${131.51*d2r}"/>
+    </xacro:thruster_macro>
+
+    <!--right mid-->
+    <xacro:thruster_macro thruster_id="6">
+      <origin xyz="-0.00525 -0.43515 0.0" rpy="${90*d2r} ${180*d2r} ${180*d2r}"/> 
+    </xacro:thruster_macro>
+
+    <!--front right-->
+    <xacro:thruster_macro thruster_id="7">
+      <origin xyz="0.30916 -0.36341 0.0" rpy="${-90*d2r} ${-135*d2r} ${-131.51*d2r}"/>
+    </xacro:thruster_macro>
+    
+    <!--right top-->
+    <xacro:thruster_macro thruster_id="4">
+      <origin xyz="0.0 -0.322 0.1535" rpy="${-90*d2r} ${-90*d2r} ${180*d2r}"/>
+    </xacro:thruster_macro>
+  
+    <!--back right-->
+    <xacro:thruster_macro thruster_id="5">
+      <origin xyz="-0.30916 -0.36341 0.0" rpy="${-90*d2r} ${-45*d2r} ${131.51*d2r}"/>
+    </xacro:thruster_macro> 
+
+    <!-- Default joint state publisher -->
+    <gazebo>
+        <plugin name="uuv_joint_state_publisher" filename="libuuv_joint_state_publisher.so">
+            <robotNamespace>$(arg namespace)</robotNamespace>
+            <updateRate>50</updateRate>
+        </plugin>
+    </gazebo>
+</robot>

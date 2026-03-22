@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>barracuda_thrusters</name>
+  <version>0.0.0</version>
+  <description
+    >barracuda_thrusters package converts desired force values for each thruster (which it receives from the control module) into values that can be output on the PWM pins on the microcontrollers on the thruster boards, then sends the appropriate values to the appropriate registers on the microcontrollers via serial</description>
+  <maintainer email="mihirsin@usc.edu">mihir</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- barracuda_thrusters.py -->
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <exec_depend>python3-smbus</exec_depend>
+  <exec_depend>python-jetson-gpio-pip</exec_depend>
+
+
+  <!-- access shared data files from python nodes -->
+  <exec_depend>ament_index_python</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

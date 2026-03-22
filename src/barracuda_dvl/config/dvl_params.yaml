@@ -1,0 +1,25 @@
+barracuda/dvl_publisher:
+  ros__parameters:
+    # Network settings
+    dvl_host: "192.168.8.148" # IP address for DVL on router-ethernet
+    dvl_port: 16171 # TCP port for JSON protocol
+    client_address: "0.0.0.0" # Local IP address
+
+    # Frame settings
+    frame_id: "dvl_link" # DVL sensor frame
+    odom_frame_id: "odom" # Odometry frame
+    publish_tf: true # Whether to publish TF transforms
+
+    # Connection settings
+    connection_timeout: 5.0 # Socket connection timeout (seconds)
+    reconnect_interval: 2.0 # Reconnection attempt interval (seconds)
+
+    # Topic remapping (if needed)
+    topics:
+      odometry: "dvl/odometry"
+      pose: "dvl/pose"
+      altitude: "dvl/altitude"
+
+    # Services
+    services:
+      acoustic_control: "dvl/set_acoustic_enabled"

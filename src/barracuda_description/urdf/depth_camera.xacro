@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="depth_camera" params="parent_link namespace">
+
+    <xacro:property name="M_PI" value="3.1415926535897931" />
+
+    <!-- <xacro:arg name="namespace" default="barracuda" /> -->
+    <xacro:arg name="camera_name" default="zedm" />
+    <xacro:arg name="camera_model" default="zedm" />
+    <xacro:arg name="cam_pos_x" default="0.3" />
+    <xacro:arg name="cam_pos_y" default="0.0" />
+    <xacro:arg name="cam_pos_z" default="0.0" />
+    <xacro:arg name="cam_roll" default="0.0" />
+    <xacro:arg name="cam_pitch" default="0.0" />
+    <xacro:arg name="cam_yaw" default="0.0" />
+    <!-- <xacro:arg name="frame_id" value="${namespace}/base_link" /> -->
+    <xacro:arg name="gnss_frame" default="" />
+    <!-- <xacro:property name="parent_link" default="" /> -->
+
+    <!-- <xacro:property name="parent" value="${namespace}/base_link" /> -->
+    <xacro:property name="frame_id" value="${namespace}/base_link" />
+    <xacro:property name="baseline" value="0.06" />
+    <xacro:property name="height" value="0.0265" />
+    <xacro:property name="bottom_slope" value="0.0" />
+    <xacro:property name="screw_offset_x" value="0.0" />
+    <xacro:property name="screw_offset_z" value="0.0" />
+    <xacro:property name="optical_offset_x" value="0.0" />
+
+    <joint name="$(arg camera_name)_base_joint" type="fixed">
+      <parent link="${parent_link}" />
+      <child link="${namespace}/$(arg camera_name)_base_link" />
+      <origin xyz="$(arg cam_pos_x) $(arg cam_pos_y) $(arg cam_pos_z)"
+        rpy="$(arg cam_roll) $(arg cam_pitch) $(arg cam_yaw)" />
+    </joint>
+
+    <!-- Camera Link -->
+    <link name="${namespace}/$(arg camera_name)_base_link" />
+
+    <!-- Camera Center -->
+    <link name="${namespace}/$(arg camera_name)_camera_center">
+      <visual>
+        <origin xyz="${screw_offset_x} 0 ${screw_offset_z}" rpy="0 0 -${M_PI/2}" />
+        <geometry>
+          <mesh filename="file://$(find barracuda_description)/meshes/$(arg camera_model).dae" />
+        </geometry>
+        <material name="zedm_mat">
+          <color rgba="0 0 0 0.9" />
+        </material>
+      </visual>
+    </link>
+
+    <joint name="$(arg camera_name)_camera_center_joint" type="fixed">
+      <parent link="${namespace}/$(arg camera_name)_base_link" />
+      <child link="${namespace}/$(arg camera_name)_camera_center" />
+      <origin xyz="0 0 ${height/2}" rpy="0 ${bottom_slope} 0" />
+    </joint>
+
+    <!-- Left Camera -->
+    <link name="${namespace}/$(arg camera_name)_left_camera_frame" />
+    <joint name="$(arg camera_name)_left_camera_joint" type="fixed">
+      <parent link="${namespace}/$(arg camera_name)_camera_center" />
+      <child link="${namespace}/$(arg camera_name)_left_camera_frame" />
+      <origin xyz="${optical_offset_x} ${baseline/2} 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="${namespace}/$(arg camera_name)_left_camera_optical_frame" />
+    <joint name="$(arg camera_name)_left_camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+      <parent link="${namespace}/$(arg camera_name)_left_camera_frame" />
+      <child link="${namespace}/$(arg camera_name)_left_camera_optical_frame" />
+    </joint>
+
+    <!-- Right Camera -->
+    <link name="${namespace}/$(arg camera_name)_right_camera_frame" />
+    <joint name="$(arg camera_name)_right_camera_joint" type="fixed">
+      <parent link="${namespace}/$(arg camera_name)_camera_center" />
+      <child link="${namespace}/$(arg camera_name)_right_camera_frame" />
+      <origin xyz="${optical_offset_x} -${baseline/2} 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="${namespace}/$(arg camera_name)_right_camera_optical_frame" />
+    <joint name="$(arg camera_name)_right_camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="-${M_PI/2} 0.0 -${M_PI/2}" />
+      <parent link="${namespace}/$(arg camera_name)_right_camera_frame" />
+      <child link="${namespace}/$(arg camera_name)_right_camera_optical_frame" />
+    </joint>
+
+    <!-- Stereo Camera -->
+    <gazebo reference="${namespace}/$(arg camera_name)_left_camera_frame">
+      <sensor name="left_camera" type="depth">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>15</update_rate>
+        <camera>
+          <camera_name>${namespace}/$(arg camera_name)_left_camera_frame</camera_name>
+          <horizontal_fov>1.089</horizontal_fov> <!-- Need to change -->
+          <image>
+            <format>B8G8R8</format> <!-- Need to change -->
+            <width>1920</width>
+            <height>1080</height>
+          </image>
+          <clip> <!-- Minimum and maximum range the camera can see -->
+            <near>0.04</near>
+            <far>100.0</far>
+          </clip>
+        </camera>
+        <plugin name="depth_camera_controller" filename="libgazebo_ros_depth_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <min_depth>0.1</min_depth>
+          <max_depth>100.0</max_depth>
+          <!-- <attenuationR>0.01</attenuationR>
+          <attenuationG>0.01</attenuationG>
+          <attenuationB>0.003</attenuationB> -->
+
+          <!-- <backgroundR>0</backgroundR>
+          <backgroundG>0</backgroundG>
+          <backgroundB>0</backgroundB> -->
+          <robotNamespace>${namespace}</robotNamespace>
+
+          <updateRate>15.0</updateRate>
+          <frameName>${namespace}/$(arg camera_name)_left_camera_optical_frame</frameName>
+          <cameraName>left_camera</cameraName>
+          <imageTopicName>left_camera_image</imageTopicName>
+          <pointCloudTopicName>zed_point_cloud</pointCloudTopicName>
+          <depthImageTopicName>zed_image_depth</depthImageTopicName>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+    <gazebo reference="$(arg namespace)/$(arg camera_name)_right_camera_frame">
+      <sensor name="right_camera" type="camera">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>15</update_rate>
+        <camera>
+          <camera_name>${namespace}/$(arg camera_name)_right_camera_frame</camera_name>
+          <horizontal_fov>1.089</horizontal_fov> <!-- Need to change -->
+          <image>
+            <format>R8G8B8</format> <!-- Need to change -->
+            <width>1920</width>
+            <height>1080</height>
+          </image>
+          <clip> <!-- Minimum and maximum range the camera can see -->
+            <near>0.04</near>
+            <far>100.0</far>
+          </clip>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>15.0</updateRate>
+
+          <robotNamespace>${namespace}</robotNamespace>
+          <frameName>${namespace}/$(arg camera_name)_right_camera_optical_frame</frameName>
+          <cameraName>right_camera</cameraName>
+          <imageTopicName>right_camera_image</imageTopicName>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>
