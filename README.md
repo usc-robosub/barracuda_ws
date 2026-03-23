@@ -1,8 +1,9 @@
 # barracuda_ws
-ROS2 workspace with all of the packages used by the onboard Jetson included as submodules, as well as the barracuda_onboard package, which contains the launch file that launches all of the nodes that run on the Jetson. 
+ROS2 workspace with all of the packages used by the onboard Jetson
 
-## ROS2 package repo strucure  
-* The package repos are structured as pure colcon packages (the package.xml file should be in the top level of the repo, see https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html)
+## ROS2 package notes
+* The barracuda_onboard package contains the launch file that launches all of the nodes that run on the Jetson
+* See https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html for a guide on how to create a new ROS2 package
 * Dependencies should be specified in package.xml -  ``` rosdep install ``` is run in the Dockerfile to install system dependencies (see https://docs.ros.org/en/humble/Tutorials/Intermediate/Rosdep.html)
 * The default launch file should follow the naming convention pkg_name.launch.py
   * onboard_launch.py will scan the src directory in the workspace for the package names and then launch pkg_name.launch.py for each package - this way, we don’t have to manually update barracuda_onboard.launch.py whenever we add a new package to the workspace
@@ -51,22 +52,8 @@ cd into barracuda_ws, then run ``` git submodule update --init --recursive ``` t
   * ```docker compose run --rm -it <host/bridge>-no-launch``` will put you in a bash shell without needing to run both the compose up and exec -it commands
 
 ## Contributing
-### barracuda_ws issues
-[TODO]
-#### Making changes to a package already included as a submodule
-[TODO]
-#### Bringing up a new package in barracuda_ws/src
-[TODO]
-#### Making changes to the Dockerfile, docker-compose.yaml, and/or entrypoint.sh
-[TODO]
-
-## Submodule notes
-* General background: https://git-scm.com/book/en/v2/Git-Tools-Submodules
-* You can see/change which branch a submodule tracks in the .gitmodules file
-* Currently, all package repo submodules are set to track the ros2-pkg branch, except for the barracuda_thrusters repo which tracks the ros2-pkg-jetson branch
-* To update a submodule repo to the latest commit on its tracked branch, run ``` git submodule update --remote ```
-* If you want to do development on a given package, make sure you are working on the intended branch (``` cd src/<pkg name>```, ``` git branch ``` to check)
-* To add a new submodule, run ```git submodule add [-b <branch to be tracked>] <repo ssh url> [submodule path] ```
-  * For example, from barracuda_ws you could run: ``` git submodule add -b ros2-pkg git@github.com:usc-robosub/barracuda_example_package.git src/barracuda_example_package ```
-  * Or from barracuda_ws/src, you could run ``` git submodule add -b ros2-pkg git@github.com:usc-robosub/barracuda_example_package.git ```
-* To remove a submodule, run ``` git rm <path/to/submodule> ```
+* Create a branch for the issue you're working on, or check out the corresponding branch if you're working in a group and someone else has already created it
+* If there are pushes to main while you're working on your branch, rebase your branch onto main so we can keep a linear commit history when we merge your branch into main later on
+* When you finish working on an issue, make sure that the onboard image builds on the Jetson and that you can spin up a container without any errors
+* Update any relevant documentation
+* Make a pull request based on main
