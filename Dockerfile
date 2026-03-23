@@ -8,8 +8,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-pylsp \
     clangd \
-    software-properties-common \
-    && python3 -m pip install --no-cache-dir bluerobotics-ping \
+    software-properties-common \ 
     && cd && curl -L -O https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-$(uname -m)-linux.tar.xz \
     && tar xf helix-25.07.1-$(uname -m)-linux.tar.xz && mv helix-25.07.1-$(uname -m)-linux/hx /usr/local/bin \
     && mkdir -p ~/.config/helix && mv helix-25.07.1-$(uname -m)-linux/runtime ~/.config/helix \
