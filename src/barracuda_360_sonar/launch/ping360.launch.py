@@ -28,7 +28,7 @@ def generate_launch_description():
 
     # Ping360 node
     ping360_node = Node(
-        package='barracuda_ping_360',
+        package='barracuda_360_sonar',
         executable='ping360_node',
         namespace=LaunchConfiguration('namespace'),
         name='ping360_node',

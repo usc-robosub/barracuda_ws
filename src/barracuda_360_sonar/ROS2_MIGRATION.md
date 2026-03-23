@@ -59,7 +59,7 @@ This document outlines the migration from ROS1 to ROS2 for the Barracuda Ping360
 - Node launching via `launch_ros.actions.Node`
 - Supports namespace and dynamic parameter passing
 
-#### barracuda_ping_360/launch/ping360.launch.py
+#### barracuda_360_sonar/launch/ping360.launch.py
 - Meta-package launch file
 - Includes ping360_sonar launch file
 - Provides namespace and device configuration
@@ -134,10 +134,10 @@ docker-compose up --build
 ```bash
 # Terminal 1: Source the workspace
 source install/setup.bash
-ros2 launch barracuda_ping_360 ping360.launch.py
+ros2 launch barracuda_360_sonar ping360.launch.py
 
 # With custom parameters
-ros2 launch barracuda_ping_360 ping360.launch.py device:=/dev/ttyUSB0 namespace:=barracuda
+ros2 launch barracuda_360_sonar ping360.launch.py device:=/dev/ttyUSB0 namespace:=barracuda
 ```
 
 ### Command Line Node
