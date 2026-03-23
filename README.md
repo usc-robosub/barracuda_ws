@@ -23,7 +23,10 @@ Use the SSH url to clone this repo (``` git clone git@github.com:usc-robosub/bar
 cd into barracuda_ws, **then run ``` git submodule update --init --recursive ``` to initialize the submodule dirs (they will be empty before you do this)**.
 
 ## Commands for building docker images & working with containers
-```[PKG_SEL="<pkg_name_1 pkg_name_2 ...>"] [IMG_ID="<string-appended-to-default-image-name>"] docker compose build```
+In the following commands, the optional IMG_ID and PKG_SEl environment variables are set inline to make it clear which commands they affect, but it will often be more convenient to set them in the .env file.
+From barracuda_ws/, you can run ```cp .env.template .env``` to create your .env file from the template.
+
+```[PKG_SEL="<pkg_name_1 pkg_name_2 ...>"] [IMG_ID=<string-appended-to-default-image-name>] docker compose build```
 * Creates an image with all included ROS2 packages built, named $USER-barracuda-onboard by default if PKG_SEL and IMG_ID are not set
 * If PKG_SEL is set, only the specified packages get built during the image build process, and IMG_ID specifies the string appended to the default image name when set
 * These two env vars can be used together to create uniquely named images with different combinations of ROS2 packages built in them
