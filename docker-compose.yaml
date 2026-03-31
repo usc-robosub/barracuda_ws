@@ -30,18 +30,22 @@ services:
       dockerfile: Dockerfile
       args:
         PKG_SEL: ${PKG_SEL:-}
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
     environment:
       IMG_ID: ${IMG_ID:-}
       ROS_DOMAIN_ID: "0"
-    user: root
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     privileged: true
     image: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
     container_name: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
     tty: true
     network_mode: host
-    # ipc: host
+    ipc: host
+    runtime: nvidia
+    shm_size: 1gb
     volumes:
-      - ${PWD}/src:/root/barracuda_ws/src
+      - ${PWD}:/home/ros/barracuda_ws
 
   host-no-launch:
     extends: host
