@@ -60,6 +60,7 @@ services:
     ports:
       - 8765:8765
     profiles: ["bridge"]
+    runtime: runc # this is the default runtime value
 
   bridge-no-launch:
     extends: bridge
