@@ -36,6 +36,8 @@ services:
       IMG_ID: ${IMG_ID:-}
       ROS_DOMAIN_ID: "0"
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    group_add:
+      - dialout
     privileged: true
     image: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
     container_name: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
