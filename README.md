@@ -18,9 +18,32 @@ Before proceeding on your local machine, make sure you have [Docker Engine](http
 
 ### Cloning this repo
 On the Jetson (and on your local machine if you haven't already done so), generate an ssh key and [add it to your Github account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
-Then run ``` git config --global "<your name>" ``` and ``` git config --global "<your email>" ``` so you can push to the remote later on.
-Use the SSH url to clone this repo (``` git clone git@github.com:usc-robosub/barracuda_ws.git ```)
-cd into barracuda_ws, **then run ``` git submodule update --init --recursive ``` to initialize the submodule dirs (they will be empty before you do this)**.
+Then run 
+
+```bash
+git config --global user.name "<your name>"
+``` 
+
+and 
+
+```bash
+git config --global user.email "<your email>"
+``` 
+
+so you can push to the remote later on.
+Use the SSH url to clone and cd into this repo 
+
+```bash 
+git clone git@github.com:usc-robosub/barracuda_ws.git && cd barracuda_ws
+```
+
+ **then run** 
+
+```bash
+git submodule update --init --recursive
+``` 
+
+**to initialize the submodule dirs (they will be empty before you do this)**.
 
 ## Commands for building docker images & working with containers
 In the following commands, the optional IMG_ID and PKG_SEl environment variables are set inline to make it clear which commands they affect, but it will often be more convenient to set them in the .env file.
