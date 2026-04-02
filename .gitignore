@@ -1,6 +1,2 @@
 .env
 __pycache__/
-.codex
-build/
-install/
-log/

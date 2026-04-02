@@ -12,7 +12,6 @@ from launch.logging import get_logger
 
 
 logger = get_logger("barracuda_onboard.launch.py")
-workspace_src = "/home/ros/barracuda_ws/src"
 
 
 # helper to include a given external launch file
@@ -29,7 +28,7 @@ def include_launch_description(package, launchfile):
 
 
 # scan workspace src dir, make a list of all package names except for barracuda_onboard
-pkgs = [pkg for pkg in os.listdir(workspace_src) if pkg != "barracuda_onboard"]
+pkgs = [pkg for pkg in os.listdir("/root/barracuda_ws/src") if pkg != "barracuda_onboard"]
 
 
 # if PKG_SEL env var is set, only include packages specified by PKG_SEL in pkg list
@@ -52,3 +51,4 @@ def generate_launch_description():
         # always launch foxglove bridge
         [include_launch_description("foxglove_bridge", "foxglove_bridge_launch.xml")] + launch_inclusion_list
    )
+
