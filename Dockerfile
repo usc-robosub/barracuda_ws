@@ -4,11 +4,8 @@ FROM ros:humble-ros-base-jammy
 ARG HOST_UID=1000
 ARG HOST_GID=1000
 
-# Foxglove bridge source needed for local build.
-COPY third-party/foxglove-sdk/ros/src/foxglove_bridge /opt/foxglove/ros/src
-COPY third-party/foxglove-sdk/ros/Makefile /opt/foxglove/ros
 
-# Base tooling install and Foxglove bridge build.
+# install dev packages
 RUN apt-get update && apt-get install -y \
     vim \
     git \
@@ -19,8 +16,7 @@ RUN apt-get update && apt-get install -y \
     && cd && curl -L -O https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-$(uname -m)-linux.tar.xz \
     && tar xf helix-25.07.1-$(uname -m)-linux.tar.xz && mv helix-25.07.1-$(uname -m)-linux/hx /usr/local/bin \
     && mkdir -p ~/.config/helix && mv helix-25.07.1-$(uname -m)-linux/runtime ~/.config/helix \
-    && rm -rf helix-25.07.1-$(uname -m)-linux \
-    && . /opt/ros/humble/setup.sh &&  cd /opt/foxglove/ros && make
+    && rm -rf helix-25.07.1-$(uname -m)-linux
 
 # Create a non-root user that can match the host UID/GID for Fast DDS SHM access.
 RUN groupadd -g ${HOST_GID} ros \
@@ -39,12 +35,6 @@ RUN echo "source /opt/ros/humble/setup.bash" >> /home/ros/.bashrc \
 
 # Default working directory for runtime commands.
 WORKDIR /home/ros/barracuda_ws/
-
-# Runtime ROS packages used by the description stack.
-RUN apt-get update && apt-get install -y \
-    ros-humble-joint-state-publisher \
-    ros-humble-robot-state-publisher \
-    ros-humble-xacro
 
 # Entrypoint script setup.
 COPY entrypoint.sh /home/ros/entrypoint.sh
