@@ -39,7 +39,8 @@ services:
     container_name: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
     tty: true
     network_mode: host
-    # ipc: host
+    ipc: host
+    runtime: nvidia
     volumes:
       - ${PWD}/src:/root/barracuda_ws/src
 
