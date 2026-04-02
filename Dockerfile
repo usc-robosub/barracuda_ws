@@ -36,12 +36,6 @@ RUN echo "source /opt/ros/humble/setup.bash" >> /home/ros/.bashrc \
 # Default working directory for runtime commands.
 WORKDIR /home/ros/barracuda_ws/
 
-# Runtime ROS packages used by the description stack.
-RUN apt-get update && apt-get install -y \
-    ros-humble-joint-state-publisher \
-    ros-humble-robot-state-publisher \
-    ros-humble-xacro
-
 # Entrypoint script setup.
 COPY entrypoint.sh /home/ros/entrypoint.sh
 RUN chmod +x /home/ros/entrypoint.sh && chown ros:ros /home/ros/entrypoint.sh
