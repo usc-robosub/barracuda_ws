@@ -1,7 +1,5 @@
 FROM ros:humble-ros-base-jammy
 
-COPY third-party/foxglove-sdk/ros/src/foxglove_bridge /opt/foxglove/ros/src
-COPY third-party/foxglove-sdk/ros/Makefile /opt/foxglove/ros
 RUN apt-get update && apt-get install -y \
     vim \
     git \
@@ -12,8 +10,7 @@ RUN apt-get update && apt-get install -y \
     && cd && curl -L -O https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-$(uname -m)-linux.tar.xz \
     && tar xf helix-25.07.1-$(uname -m)-linux.tar.xz && mv helix-25.07.1-$(uname -m)-linux/hx /usr/local/bin \
     && mkdir -p ~/.config/helix && mv helix-25.07.1-$(uname -m)-linux/runtime ~/.config/helix \
-    && rm -rf helix-25.07.1-$(uname -m)-linux \
-    && . /opt/ros/humble/setup.sh &&  cd /opt/foxglove/ros && make
+    && rm -rf helix-25.07.1-$(uname -m)-linux
 
 COPY src /root/barracuda_ws/src
 
@@ -25,7 +22,7 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
     # && rosdep update \
     && cd /root/barracuda_ws/src \
     && export PKG_PATHS=${PKG_SEL:+barracuda_onboard $PKG_SEL} \
-    && rosdep install --from-paths ${PKG_PATHS:-"."} -y --ignore-src --skip-keys="foxglove_bridge" \
+    && rosdep install --from-paths ${PKG_PATHS:-"."} -y --ignore-src \
     && cd /root/barracuda_ws \
     && colcon build --symlink-install ${PKG_PATHS:+--packages-select $PKG_PATHS} \
     && rm -rf /var/lib/apt/lists/*

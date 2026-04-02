@@ -2,7 +2,6 @@
 set -e
 
 source /opt/ros/humble/setup.bash
-source /opt/foxglove/ros/install/local_setup.bash
 source /root/barracuda_ws/install/setup.bash
 
 echo "============================"
