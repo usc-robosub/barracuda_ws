@@ -32,7 +32,9 @@ services:
         PKG_SEL: ${PKG_SEL:-}
     environment:
       IMG_ID: ${IMG_ID:-}
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     user: root
     privileged: true
     image: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
@@ -48,7 +50,9 @@ services:
     extends: host
     environment:
       NO_LAUNCH: true
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     profiles: ["host-no-launch"]
 
   bridge:
@@ -63,5 +67,7 @@ services:
     extends: bridge
     environment:
       NO_LAUNCH: true
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     profiles: ["bridge-no-launch"]
