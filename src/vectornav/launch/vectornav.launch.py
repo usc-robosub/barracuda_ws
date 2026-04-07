@@ -3,29 +3,30 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
+from launch.actions import GroupAction
+from launch.logging import get_logger
+from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PathJoinSubstitution
+
+logger = get_logger("vectornav.launch.py")
+workspace_src = "/home/ros/barracuda_ws/src"
 
 def generate_launch_description():
-
-    this_dir = get_package_share_directory('vectornav')
+    config_file = os.path.join( get_package_share_directory('vectornav'),'config','vectornav.yaml' ) 
     
-    # Vectornav
-    start_vectornav_cmd = Node(
-        package='vectornav', 
-        executable='vectornav',
-        output='screen',
-        parameters=[os.path.join(this_dir, 'config', 'vectornav.yaml')])
-    
-    start_vectornav_sensor_msgs_cmd = Node(
-        package='vectornav', 
-        executable='vn_sensor_msgs',
-        output='screen',
-        parameters=[os.path.join(this_dir, 'config', 'vectornav.yaml')])
-
-    # Create the launch description and populate
-    ld = LaunchDescription()
-
-    ld.add_action(start_vectornav_cmd)
-    ld.add_action(start_vectornav_sensor_msgs_cmd)
-
-    return ld
+    # Create the launch description and populate 
+    return LaunchDescription([ 
+        GroupAction([
+            PushRosNamespace("barracuda"),
+            Node( package='vectornav',
+                executable='vectornav', 
+                output='screen', 
+                parameters=[config_file]), 
+                
+            Node( package='vectornav', 
+                executable='vn_sensor_msgs', 
+                output='screen', 
+                parameters=[config_file])
+        ])
+    ])
