@@ -21,7 +21,15 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
     && echo "[ -f ~/barracuda_ws/install/setup.bash ] && source ~/barracuda_ws/install/setup.bash" >> ~/.bashrc \
     && . /opt/ros/humble/setup.sh \
     && cd /root/barracuda_ws/src \
-    && export PKG_PATHS=${PKG_SEL:+barracuda_onboard $PKG_SEL} \
+    && PKG_PATHS="" \
+    && if [ -n "$PKG_SEL" ]; then \
+        for pkg in $PKG_SEL; do \
+            if [ "$pkg" != "barracuda_onboard" ] && [ -f "/root/barracuda_ws/src/$pkg/package.xml" ]; then \
+                PKG_PATHS="$PKG_PATHS $pkg"; \
+            fi; \
+        done; \
+        PKG_PATHS="barracuda_onboard${PKG_PATHS:+$PKG_PATHS}"; \
+    fi \
     && rosdep install --from-paths ${PKG_PATHS:-"."} -y --ignore-src \
     && cd /root/barracuda_ws \
     && colcon build --symlink-install ${PKG_PATHS:+--packages-select $PKG_PATHS} \
