@@ -45,6 +45,11 @@ services:
     runtime: nvidia
     volumes:
       - ${PWD}/src:/root/barracuda_ws/src
+      - /tmp:/tmp
+      - /var/run/nvargus-daemon/socket:/var/run/nvargus-daemon/socket
+      - /dev/nvhost-ctrl:/dev/nvhost-ctrl
+      - /dev/nvhost-ctrl-gpu:/dev/nvhost-ctrl-gpu
+      - /dev/nvhost-gpu:/dev/nvhost-gpu
 
   host-no-launch:
     extends: host
