@@ -5,12 +5,6 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node, PushRosNamespace
 from launch.actions import GroupAction
-from launch.logging import get_logger
-from launch_ros.substitutions import FindPackageShare
-from launch.substitutions import PathJoinSubstitution
-
-logger = get_logger("vectornav.launch.py")
-workspace_src = "/home/ros/barracuda_ws/src"
 
 def generate_launch_description():
     config_file = os.path.join( get_package_share_directory('vectornav'),'config','vectornav.yaml' ) 
