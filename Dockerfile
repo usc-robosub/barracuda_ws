@@ -1,4 +1,4 @@
-FROM barracuda-camera-image:latest
+FROM ghcr.io/usc-robosub/barracuda-camera-image:latest
 
 ARG PKG_SEL
 ENV PKG_SEL=$PKG_SEL
