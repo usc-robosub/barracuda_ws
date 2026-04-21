@@ -29,12 +29,16 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/usc-robosub/barracuda-camera-image:latest}
         PKG_SEL: ${PKG_SEL:-}
     environment:
+      DISPLAY: ${DISPLAY:-:0}
       IMG_ID: ${IMG_ID:-}
+      QT_X11_NO_MITSHM: "1"
       FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
       RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+      XAUTHORITY: /root/.Xauthority
     user: root
     privileged: true
     image: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
@@ -46,6 +50,8 @@ services:
     volumes:
       - ${PWD}/src:/root/barracuda_ws/src
       - /tmp:/tmp
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOST_XAUTHORITY:-/dev/null}:/root/.Xauthority:ro
       - /var/run/nvargus-daemon/socket:/var/run/nvargus-daemon/socket
       - /dev/nvhost-ctrl:/dev/nvhost-ctrl
       - /dev/nvhost-ctrl-gpu:/dev/nvhost-ctrl-gpu
