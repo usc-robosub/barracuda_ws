@@ -55,6 +55,18 @@ cp .env.template .env
 
 to create your `.env` file from the template.
 
+## Running GUI apps like `rviz2`
+If you launch GUI apps from inside the container, use the wrapper below instead of calling `docker compose` directly. It forwards the current `DISPLAY`, passes the host's Xauthority file into the container, and avoids stale SSH-forwarded display values such as `localhost:11.0`.
+
+```bash
+chmod +x scripts/compose-with-gui.sh
+./scripts/compose-with-gui.sh up -d host-no-launch
+docker exec -it <container-name> bash
+rviz2
+```
+
+If you want the window on the Jetson's own monitor, log into the desktop on the Jetson first so the local X server is active. If you are connecting over SSH with X11 forwarding, keep using `ssh -X` or `ssh -Y`; the wrapper will forward that `DISPLAY` into the container.
+
 ```bash
 [PKG_SEL="<pkg_name_1 pkg_name_2 ...>"] [IMG_ID=<string-appended-to-default-image-name>] docker compose build
 ```
@@ -100,6 +112,34 @@ docker compose down [service-name]
 * Spins up a one-off container from either the default image or a custom one when `IMG_ID` is set, which gets removed after exiting the container
 * Useful for quickly getting into a container shell when used with one of the `X-no-launch` services - a good use case for this is debugging launch files
   * `docker compose run --rm -it <host/bridge>-no-launch` will put you in a bash shell without needing to run both the `compose up` and `exec -it` commands
+
+## Running nvblox
+Initialize submodules after cloning so `src/isaac_ros_nvblox` and `src/zed-ros2-wrapper` are populated:
+
+```bash
+git submodule update --init --recursive
+```
+
+To start Barracuda's nvblox integration with the default container startup:
+
+```bash
+docker compose up --build
+```
+
+This setup installs the official Isaac ROS NVBLOX Debian package in the image and overlays Barracuda packages, including your own camera pipeline and ZED ROS 2 wrapper. The container startup launches `barracuda_nvblox.launch.py` directly without rebuilding `nvblox_ros`.
+
+If you want a shell without starting NVBLOX:
+
+```bash
+docker compose up --build -d host-no-launch
+docker exec -it <container-name> bash
+source /root/barracuda_ws/install/setup.bash
+ros2 launch barracuda_nvblox_launch barracuda_nvblox.launch.py
+```
+
+If startup reports `nvblox_ros package not found`, verify the image build completed and that Isaac ROS apt packages were installed successfully.
+
+Use `ros2 launch barracuda_onboard barracuda_onboard.launch.py` manually if you want to start the old onboard flow instead.
 
 ## Contributing
 * Create a branch for the issue you're working on, or check out the corresponding branch if you're working in a group and someone else has already created it

@@ -7,6 +7,7 @@ from launch_ros.substitutions import FindPackageShare
 from launch.logging import get_logger
 
 logger = get_logger("barracuda_onboard.launch.py")
+default_excluded_pkgs = {"barracuda_onboard"}
 
 
 def include_launch_description(package, launchfile):
@@ -25,7 +26,7 @@ src_root = "/root/barracuda_ws/src"
 pkgs = [
     pkg
     for pkg in os.listdir(src_root)
-    if pkg != "barracuda_onboard"
+    if pkg not in default_excluded_pkgs
     and os.path.isfile(os.path.join(src_root, pkg, "package.xml"))
 ]
 
