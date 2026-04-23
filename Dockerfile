@@ -1,8 +1,5 @@
 FROM ghcr.io/usc-robosub/barracuda-camera-image:latest
 
-ARG PKG_SEL
-ENV PKG_SEL=$PKG_SEL
-
 RUN apt-get update && apt-get install -y \
     vim \
     git \
@@ -18,32 +15,17 @@ RUN apt-get update && apt-get install -y \
 
 COPY src /root/barracuda_ws/src
 
+ARG PKG_SEL
+ENV PKG_SEL=$PKG_SEL
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
     && echo "[ -f ~/barracuda_ws/install/setup.bash ] && source ~/barracuda_ws/install/setup.bash" >> ~/.bashrc \
     && . /opt/ros/humble/setup.sh \
     && cd /root/barracuda_ws/src \
-    && PKG_PATHS="" \
-    && PKG_SKIP="zed_debug" \
-    && INCLUDE_ZED_WRAPPER=0 \
-    && if [ -n "$PKG_SEL" ]; then \
-        for pkg in $PKG_SEL; do \
-            if [ "$pkg" != "barracuda_onboard" ] && [ -f "/root/barracuda_ws/src/$pkg/package.xml" ]; then \
-                PKG_PATHS="$PKG_PATHS $pkg"; \
-                if [ "$pkg" = "barracuda_camera" ]; then \
-                    INCLUDE_ZED_WRAPPER=1; \
-                fi; \
-            fi; \
-        done; \
-        PKG_PATHS="barracuda_onboard${PKG_PATHS:+$PKG_PATHS}"; \
-        if [ "$INCLUDE_ZED_WRAPPER" = "1" ] && [ -f "/root/barracuda_ws/src/zed-ros2-wrapper/zed_wrapper/package.xml" ]; then \
-            PKG_PATHS="$PKG_PATHS zed_wrapper"; \
-        fi; \
-    fi \
-    && rosdep install --from-paths . -y --ignore-src \
+    && export PKG_PATHS=${PKG_SEL:+barracuda_onboard $PKG_SEL} \
+    && rosdep install --from-paths ${PKG_PATHS:-"."} -y --ignore-src \
     && cd /root/barracuda_ws \
-    && colcon build --symlink-install --packages-skip $PKG_SKIP ${PKG_PATHS:+--packages-up-to $PKG_PATHS} \
+    && colcon build --symlink-install ${PKG_PATHS:+--packages-select $PKG_PATHS} \
     && rm -rf /var/lib/apt/lists/*
-
 
 WORKDIR /root/barracuda_ws/
 
