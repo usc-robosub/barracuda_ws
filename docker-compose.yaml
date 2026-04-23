@@ -67,6 +67,8 @@ services:
       - 8765:8765
     profiles: ["bridge"]
     runtime: runc # this is the default runtime value
+    volumes:
+      - ${PWD}/src:/root/barracuda_ws/src
 
   bridge-no-launch:
     extends: bridge
