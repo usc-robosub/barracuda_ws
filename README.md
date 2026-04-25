@@ -6,8 +6,10 @@ ROS2 workspace with all of the packages used by the onboard Jetson
 * See https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html for a guide on how to create a new ROS2 package
 * **Dependencies should be specified in package.xml** -  `rosdep install` is run in the Dockerfile to install system dependencies (see https://docs.ros.org/en/humble/Tutorials/Intermediate/Rosdep.html)
 * **The default launch file should follow the naming convention pkg_name.launch.py**
-  * `onboard_launch.py` will scan the `src` directory in the workspace for the package names and then launch `pkg_name.launch.py` for each package - this way, we don’t have to manually update `barracuda_onboard.launch.py` whenever we add a new package to the workspace
+  * `barrracuda_onboard.launch.py` will scan the `src` directory in the workspace for the package names and then launch `pkg_name.launch.py` for each package - this way, we don’t have to manually update `barracuda_onboard.launch.py` whenever we add a new package to the workspace
   * these launchfiles can act as wrappers for more descriptively named launch files; we can maintain flexibility in what we want to launch with this approach: as an example, if we have `pkg_name.launch.py`, `do_thing1.launch.py`, `do_thing2.launch.py` in the `pkg_name/launch` directory, we can use ROS params to determine if `do_thing1.launch.py` and/or `do_thing2.launch.py` gets included in `pkg_name.launch.py`
+* All packages with launchfiles meant to be launched directly from `barracuda_onboard.launch.py` should be located in `barracuda_ws/src` and follow the guidelines above
+* Packages that need to be built as dependencies but don't contain launchfiles meant to be launched directly should go in `barracuda_ws/src/dependency-pkgs` (for example the packages in the zed-ros2-wrapper submodule)
 
 
 ### Why the Docker base image changed
