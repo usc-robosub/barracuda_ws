@@ -32,7 +32,9 @@ services:
         PKG_SEL: ${PKG_SEL:-}
     environment:
       IMG_ID: ${IMG_ID:-}
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     user: root
     privileged: true
     image: ${USER}-barracuda-onboard${IMG_ID:+-${IMG_ID}}
@@ -43,12 +45,19 @@ services:
     runtime: nvidia
     volumes:
       - ${PWD}/src:/root/barracuda_ws/src
+      - /tmp:/tmp
+      - /var/run/nvargus-daemon/socket:/var/run/nvargus-daemon/socket
+      - /dev/nvhost-ctrl:/dev/nvhost-ctrl
+      - /dev/nvhost-ctrl-gpu:/dev/nvhost-ctrl-gpu
+      - /dev/nvhost-gpu:/dev/nvhost-gpu
 
   host-no-launch:
     extends: host
     environment:
       NO_LAUNCH: true
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     profiles: ["host-no-launch"]
 
   bridge:
@@ -58,10 +67,14 @@ services:
       - 8765:8765
     profiles: ["bridge"]
     runtime: runc # this is the default runtime value
+    volumes:
+      - ${PWD}/src:/root/barracuda_ws/src
 
   bridge-no-launch:
     extends: bridge
     environment:
       NO_LAUNCH: true
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     profiles: ["bridge-no-launch"]

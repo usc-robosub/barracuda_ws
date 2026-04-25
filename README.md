@@ -6,8 +6,37 @@ ROS2 workspace with all of the packages used by the onboard Jetson
 * See https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html for a guide on how to create a new ROS2 package
 * **Dependencies should be specified in package.xml** -  `rosdep install` is run in the Dockerfile to install system dependencies (see https://docs.ros.org/en/humble/Tutorials/Intermediate/Rosdep.html)
 * **The default launch file should follow the naming convention pkg_name.launch.py**
-  * `onboard_launch.py` will scan the `src` directory in the workspace for the package names and then launch `pkg_name.launch.py` for each package - this way, we don’t have to manually update `barracuda_onboard.launch.py` whenever we add a new package to the workspace
+  * `barrracuda_onboard.launch.py` will scan the `src` directory in the workspace for the package names and then launch `pkg_name.launch.py` for each package - this way, we don’t have to manually update `barracuda_onboard.launch.py` whenever we add a new package to the workspace
   * these launchfiles can act as wrappers for more descriptively named launch files; we can maintain flexibility in what we want to launch with this approach: as an example, if we have `pkg_name.launch.py`, `do_thing1.launch.py`, `do_thing2.launch.py` in the `pkg_name/launch` directory, we can use ROS params to determine if `do_thing1.launch.py` and/or `do_thing2.launch.py` gets included in `pkg_name.launch.py`
+* All packages with launchfiles meant to be launched directly from `barracuda_onboard.launch.py` should be located in `barracuda_ws/src` and follow the guidelines above
+* Packages that need to be built as dependencies but don't contain launchfiles meant to be launched directly should go in `barracuda_ws/src/dependency-pkgs` (for example the packages in the zed-ros2-wrapper submodule)
+
+
+### Why the Docker base image changed
+* The workspace now builds from `ghcr.io/usc-robosub/barracuda-camera-image:latest` instead of `ros:humble-ros-base-jammy`.
+* This base image is the team-maintained camera-ready image published in GitHub Container Registry for `usc-robosub`.
+* It is intended to bundle Jetson/camera prerequisites so this workspace can focus on workspace-specific packages and launch behavior.
+* Package listing: https://github.com/orgs/usc-robosub/packages
+* Source image Dockerfile: open the package entry from the org package listing above and follow its linked source artifact/repository.
+
+### Why these docker-compose environment variables are set
+* `NO_LAUNCH=true` (in `*-no-launch` services): tells `entrypoint.sh` to skip `ros2 launch barracuda_onboard barracuda_onboard.launch.py`, which is useful for interactive debugging and manual launch testing.
+* `FASTDDS_BUILTIN_TRANSPORTS=UDPv4`: forces UDP transport selection in Fast DDS for straightforward network behavior across Jetson/LAN setups.
+* `ROS_DOMAIN_ID=0`: keeps all nodes in the same default ROS domain unless intentionally overridden.
+* `RMW_IMPLEMENTATION=rmw_fastrtps_cpp`: pins ROS2 middleware inside the container to Fast DDS (`rmw_fastrtps_cpp`) so node behavior stays consistent across environments.
+* Together with `FASTDDS_BUILTIN_TRANSPORTS=UDPv4`, DDS traffic to the host machine and other devices is carried over UDPv4 (instead of relying on middleware defaults).
+
+### Why these docker-compose volume mounts are set
+* `${PWD}/src:/root/barracuda_ws/src`
+  * Needed for live-edit development of in-workspace ROS2 packages from the host without rebuilding the image every code change.
+  * Required by the package auto-discovery behavior in `barracuda_onboard.launch.py` (it scans `/root/barracuda_ws/src` for package launch directories).
+* `/tmp:/tmp`
+  * Provides access to host-side temporary files and shared IPC artifacts that some tools/drivers use during development and debugging.
+* `/var/run/nvargus-daemon/socket:/var/run/nvargus-daemon/socket`
+  * Required on Jetson for camera services that talk to NVIDIA Argus through the host daemon socket.
+  * Relevant for camera bring-up paths (for example, when launching camera stacks via `barracuda_camera`).
+* `/dev/nvhost-ctrl`, `/dev/nvhost-ctrl-gpu`, `/dev/nvhost-gpu`
+  * Expose required Jetson GPU/host control devices to the container for camera and accelerated processing paths.
 
 ## Setting up your development environment
 You can set up a development environment for yourself both on the Jetson in the lab, and on your local machine.
