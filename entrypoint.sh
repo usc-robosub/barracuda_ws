@@ -20,7 +20,9 @@ fi
 
 if [ -n "${NO_LAUNCH}" ]
 then echo "NO_LAUNCH environment variable set" && exec /bin/bash
-else echo "launching: barracuda_onboard.launch.py" && ros2 launch barracuda_onboard barracuda_onboard.launch.py
+else
+  echo "launching: barracuda_onboard.launch.py"
+  ros2 launch barracuda_onboard barracuda_onboard.launch.py
 fi
 
 exec "$@"
