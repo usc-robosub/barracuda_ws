@@ -20,5 +20,9 @@ setup(
     description="Launch files to run nvblox against Barracuda ZED topics.",
     license="Apache-2.0",
     tests_require=["pytest"],
-    entry_points={},
+    entry_points={
+        "console_scripts": [
+            "pose_to_transform = barracuda_nvblox.pose_to_transform:main",
+        ],
+    },
 )

@@ -28,6 +28,7 @@ pkgs = [
     for pkg in os.listdir(src_root)
     if pkg not in default_excluded_pkgs
     and os.path.isfile(os.path.join(src_root, pkg, "package.xml"))
+    and os.path.isfile(os.path.join(src_root, pkg, "launch", f"{pkg}.launch.py"))
 ]
 
 if selected_pkgs_str := os.getenv("PKG_SEL"):
