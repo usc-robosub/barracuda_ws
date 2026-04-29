@@ -1,0 +1,377 @@
+{
+    "AI Models": {
+        "valid": [
+            "MULTI CLASS DETECTION is optimized",
+            "MULTI CLASS MEDIUM DETECTION is optimized",
+            "MULTI CLASS ACCURATE DETECTION is optimized",
+            "HUMAN BODY FAST DETECTION is optimized",
+            "HUMAN BODY MEDIUM DETECTION is optimized",
+            "HUMAN BODY ACCURATE DETECTION is optimized",
+            "HUMAN BODY 38 FAST DETECTION is optimized",
+            "HUMAN BODY 38 MEDIUM DETECTION is optimized",
+            "HUMAN BODY 38 ACCURATE DETECTION is optimized",
+            "PERSON HEAD DETECTION is optimized",
+            "PERSON HEAD ACCURATE DETECTION is optimized",
+            "REID ASSOCIATION is optimized",
+            "NEURAL LIGHT DEPTH is optimized",
+            "NEURAL DEPTH is optimized",
+            "NEURAL PLUS DEPTH is optimized"
+        ]
+    },
+    "GMSL DRIVER": {
+        "GMSL driver": "",
+        "error": [
+            "<b>No GMSL driver detected or not a Stereolabs board.</b>"
+        ]
+    },
+    "Graphics Card": {
+        "deviceCount": 1,
+        "deviceDriverVersion": 12060,
+        "devices": [
+            {
+                "arch": "Ampere",
+                "computeCapability": "8.7",
+                "cores": 2048,
+                "name": "Orin",
+                "totalMemoryBytes": "65893236736",
+                "totalMemoryMB": 62840.6875
+            }
+        ],
+        "glx_info": "OpenGL vendor string: Mesa\nOpenGL renderer string: llvmpipe (LLVM 15.0.7, 128 bits)\nOpenGL core profile version string: 4.5 (Core Profile) Mesa 23.2.1-1ubuntu3.1~22.04.3\nOpenGL core profile shading language version string: 4.50\nOpenGL core profile context flags: (none)\nOpenGL core profile profile mask: core profile\nOpenGL core profile extensions:\nOpenGL version string: 4.5 (Compatibility Profile) Mesa 23.2.1-1ubuntu3.1~22.04.3\nOpenGL shading language version string: 4.50\nOpenGL context flags: (none)\nOpenGL profile mask: compatibility profile\nOpenGL extensions:\nOpenGL ES profile version string: OpenGL ES 3.2 Mesa 23.2.1-1ubuntu3.1~22.04.3\nOpenGL ES profile shading language version string: OpenGL ES GLSL ES 3.20\nOpenGL ES profile extensions:\n",
+        "initResult": 0,
+        "valid": [
+            "<b>Graphics card: </b> Orin"
+        ]
+    },
+    "Log Kernel Trace (for ZED X)": {
+        "dmesg": {
+            "DMESG [DTS] LOG ": [
+                "dmesg: read kernel buffer failed: Operation not permitted"
+            ],
+            "DMESG [MAX9x] LOG": [
+                "dmesg: read kernel buffer failed: Operation not permitted"
+            ],
+            "DMESG [PCA] LOG ": [
+                "dmesg: read kernel buffer failed: Operation not permitted"
+            ],
+            "DMESG [ZEDX] LOG": [
+                "dmesg: read kernel buffer failed: Operation not permitted"
+            ],
+            "DTB list SLabs": [
+                "ls: cannot access '/boot/stereolabs/*': No such file or directory"
+            ],
+            "DTB list original": [
+                "/boot/dtb/kernel_tegra234-p3737-0000+p3701-0005-nv.dtb"
+            ],
+            "Dpkg list Stereolabs": [
+            ],
+            "Dpkg list zed": [
+            ],
+            "Driver list": {
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/max9295/sl_max9295.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/max9296/max9296.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/max9296/sl_max9296.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/max96712/max96712.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/max96712/sl_max96712.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/zedone4k/sl_zedxone_uhd.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/zedx/max96712.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/zedx/sl_zedx.ko": "not found",
+                "/usr/lib/modules/5.15.148-tegra/kernel/drivers/stereolabs/zedxpro/sl_zedxpro.ko": "not found"
+            },
+            "EXTlinux file": [
+                "TIMEOUT 30",
+                "DEFAULT primary",
+                "MENU TITLE L4T boot options",
+                "LABEL primary",
+                "      MENU LABEL primary kernel",
+                "      LINUX /boot/Image",
+                "      INITRD /boot/initrd",
+                "      APPEND ${cbootargs} root=/dev/nvme0n1p1 rw rootwait rootfstype=ext4 mminit_loglevel=4 console=ttyTCU0,115200 console=ttyAMA0,115200 firmware_class.path=/etc/firmware fbcon=map:0 video=efifb:off console=tty0 nv-auto-config",
+                "# When testing a custom kernel, it is recommended that you create a backup of",
+                "# the original kernel and add a new entry to this file so that the device can",
+                "# fallback to the original kernel. To do this:",
+                "#",
+                "# 1, Make a backup of the original kernel",
+                "#      sudo cp /boot/Image /boot/Image.backup",
+                "#",
+                "# 2, Copy your custom kernel into /boot/Image",
+                "#",
+                "# 3, Uncomment below menu setting lines for the original kernel",
+                "#",
+                "# 4, Reboot",
+                "# LABEL backup",
+                "#    MENU LABEL backup kernel",
+                "#    LINUX /boot/Image.backup",
+                "#    INITRD /boot/initrd",
+                "#    APPEND ${cbootargs}"
+            ],
+            "I2C Trace list": {
+                "I2C Trace /dev/i2C-0": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         -- -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: UU -- -- -- -- -- UU -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-1": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         UU -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: UU UU -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-2": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         -- -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-3": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         -- -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-6": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         -- -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-7": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         -- -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-8": [
+                    "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f",
+                    "00:                         -- -- -- -- -- -- -- -- ",
+                    "10: -- -- -- -- -- -- -- -- -- -- -- -- UU -- -- -- ",
+                    "20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- ",
+                    "70: -- -- -- -- -- -- -- --                         "
+                ],
+                "I2C Trace /dev/i2C-9": [
+                    "Error: Bus doesn't support detection commands"
+                ]
+            },
+            "Jetpack": [
+                "# R36 (release), REVISION: 4.7, GCID: 42132812, BOARD: generic, EABI: aarch64, DATE: Thu Sep 18 22:54:44 UTC 2025",
+                "# KERNEL_VARIANT: oot",
+                "TARGET_USERSPACE_LIB_DIR=nvidia",
+                "TARGET_USERSPACE_LIB_DIR_PATH=usr/lib/aarch64-linux-gnu/nvidia"
+            ],
+            "Linux_uname": [
+                "Linux barracuda-agx 5.15.148-tegra #1 SMP PREEMPT Mon Jun 16 08:24:48 PDT 2025 aarch64 aarch64 aarch64 GNU/Linux"
+            ],
+            "ZED SDK Version": {
+                "Diag": "5.1.2",
+                "RT": "5.1.2"
+            },
+            "ZEDX Daemon Status LS": [
+                "Unit zed_x_daemon.service could not be found."
+            ],
+            "ZEDX Driver State": [
+            ],
+            "i2C Trace": [
+                "i2c-0\ti2c       \t3160000.i2c                     \tI2C adapter",
+                "i2c-1\ti2c       \tc240000.i2c                     \tI2C adapter",
+                "i2c-2\ti2c       \t3180000.i2c                     \tI2C adapter",
+                "i2c-3\ti2c       \t3190000.i2c                     \tI2C adapter",
+                "i2c-4\ti2c       \tTegra BPMP I2C adapter          \tI2C adapter",
+                "i2c-5\ti2c       \t31b0000.i2c                     \tI2C adapter",
+                "i2c-6\ti2c       \t31c0000.i2c                     \tI2C adapter",
+                "i2c-7\ti2c       \tc250000.i2c                     \tI2C adapter",
+                "i2c-8\ti2c       \t31e0000.i2c                     \tI2C adapter",
+                "i2c-9\ti2c       \tNVIDIA SOC i2c adapter 0        \tI2C adapter"
+            ]
+        }
+    },
+    "Processor": {
+        "L4T version": "36.4.7",
+        "OS": "Ubuntu 22.04.5 LTS ",
+        "avxSupported": false,
+        "coreCount": "12",
+        "cpu": " ARMv8 Processor rev 1 (v8l)",
+        "datetime": "2026-04-22 07:06:52 PM",
+        "hyperThreading": "0",
+        "motherboard": "Jetson, NVIDIA",
+        "ramCapacity": "65.893237",
+        "ramUsage": "",
+        "ramUsed": "6.960419",
+        "threadCount": "12",
+        "valid": [
+            "<b>Processor: </b>  ARMv8 Processor rev 1 (v8l)",
+            "<b>Motherboard: </b> Jetson, NVIDIA"
+        ]
+    },
+    "USB Camera": {
+        "CorruptedFirmware": [
+        ],
+        "GMSL driver": [
+        ],
+        "GMSLList": [
+        ],
+        "InternalDevicesCount (GMSL)": [
+        ],
+        "InternalDevicesCount (USB)": [
+        ],
+        "MCUDetected": [
+        ],
+        "Serial Number": [
+        ],
+        "USBList": [
+            {
+                "USBMode": 3,
+                "USB_path": "/3/2",
+                "bDescriptorType": 1,
+                "bDeviceProtocol": 1,
+                "bLength": 18,
+                "bMaxPacketSize0": 9,
+                "bNumConfigurations": 1,
+                "bcdDevice": "1.0",
+                "bcdUSB": "3.0",
+                "bcdUSBClass": 239,
+                "bcdUSBSubClass": 2,
+                "busNumber": 2,
+                "device": "ZED mini",
+                "iManufacturer": 1,
+                "iProduct": 2,
+                "iSerial": 0,
+                "idProduct": "0xf682",
+                "idVendor": "0x2b03"
+            },
+            {
+                "USB_path": "/3",
+                "idProduct": "0x0420",
+                "idVendor": "0x0bda"
+            },
+            {
+                "USBMode": 2,
+                "USB_path": "/4/2",
+                "bDescriptorType": 1,
+                "bDeviceProtocol": 0,
+                "bLength": 18,
+                "bMaxPacketSize0": 64,
+                "bNumConfigurations": 1,
+                "bcdDevice": "2.3",
+                "bcdUSB": "2.0",
+                "bcdUSBClass": 0,
+                "bcdUSBSubClass": 0,
+                "busNumber": 1,
+                "device": "ZED mini MCU",
+                "iManufacturer": 1,
+                "iProduct": 2,
+                "iSerial": 3,
+                "idProduct": "0xf681",
+                "idVendor": "0x2b03"
+            },
+            {
+                "USB_path": "/4",
+                "idProduct": "0x5420",
+                "idVendor": "0x0bda"
+            },
+            {
+                "USB_path": "/3",
+                "idProduct": "0x3549",
+                "idVendor": "0x13d3"
+            }
+        ],
+        "USBMode": [
+        ],
+        "ZED Camera Module Detected": [
+        ],
+        "ZED MCU Module Detected": [
+        ],
+        "ZEDCount": [
+        ],
+        "ZEDDetected": [
+        ],
+        "ZEDs": [
+        ],
+        "camera": [
+        ],
+        "resolutions": [
+        ],
+        "sensors": [
+        ],
+        "valid": [
+            "<b>Camera: </b>ZED Mini",
+            "<b>USB Bandwidth: </b> OK",
+            "<b>USB Bandwidth: </b> OK"
+        ],
+        "warning": [
+            "<b>No GMSL driver found.</b><br/> USB camera are not impacted by this.",
+            "<b>No GMSL driver found.</b><br/> USB camera are not impacted by this."
+        ]
+    },
+    "ZED SDK": {
+        "CUDA Toolkit version": "V12.6.68 -->located in /usr/local/cuda-12.6/bin/nvcc",
+        "CUDA loading": false,
+        "GPU Driver Version": "Driver Version                            : 540.4.0",
+        "GPU Performance": "    Performance State                     : N/A",
+        "ZED SDK Version (Diag)": "5.1.2",
+        "ZED SDK Version (RT)": "5.1.2",
+        "ai": {
+            "checkAI": true,
+            "cudaVersion": 12060,
+            "tensorVersion": 100300
+        },
+        "binFiles": [
+            "libsl_ai.so",
+            "libsl_zed.so"
+        ],
+        "resourcesFiles": [
+            "neural_depth_5.3.model",
+            "neural_depth_light_5.2.model",
+            "objects_accurate_3.2.model",
+            "objects_medium_3.2.model",
+            "objects_performance_3.2.model",
+            "person_head_accurate_2.6.model",
+            "person_head_performance_2.6.model",
+            "person_reid_1.4.model",
+            "positional_tracking_2.2.model",
+            "skeleton_body18_3.2.model",
+            "skeleton_body38_3.5.model"
+        ],
+        "resourcesFilesExpected": [
+            "objects_performance_3.2"
+        ],
+        "valid": [
+            "<b>ZED SDK version:</b> 5.1.2",
+            "<b>CUDA version:</b> V12.6.68"
+        ]
+    }
+}
