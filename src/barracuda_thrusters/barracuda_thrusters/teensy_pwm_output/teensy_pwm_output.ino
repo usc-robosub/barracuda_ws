@@ -8,24 +8,25 @@
 #include "teensy_config.h"
 
 // for blink delays (for indicating whether or not thrusters are enabled)
-#define SHORT_DELAY 250
-#define LONG_DELAY 1000
+constexpr uint32_t SHORT_DELAY = 250;
+constexpr uint32_t LONG_DELAY = 1000;
 
-#ifdef PORT
-#define DC_START_IDX 0
-#define I2C_ADDR (PORT_I2C_ADDR)
-#endif
+#if defined(PORT)
+constexpr uint8_t I2C_ADDR = PORT_I2C_ADDR;
 
-#ifdef STARBOARD
-#define DC_START_IDX (N_PWM_PINS) /* N_PWM_PINS defined in header */
-#define I2C_ADDR (STARBOARD_I2C_ADDR)
+#elif defined(STARBOARD)
+constexpr uint8_t I2C_ADDR = STARBOARD_I2C_ADDR;
+
+#else
+#error "neither PORT nor STARBOARD are defined"
+
 #endif
 
 struct Registers {
   // duty cycle vals
   // four  16-bit uints take up 8 bytes
   // using 16-bit uint to accomodate higher pwm bit res (currently 8 bits)
-  uint16_t dcs[N_PWM_PINS] = {0};
+  uint16_t dcs[sizeof(PWM_PINS)] = {0};
 
   // "enable" reg
   // one 8-bit uint takes up 1 byte
@@ -37,8 +38,7 @@ struct Registers {
 I2CRegisterSlave register_slave = I2CRegisterSlave(
     Slave1, (uint8_t*)&registers, sizeof(registers), nullptr, 0);
 
-// flag used to avoid accessing enabled register value outside of its dedicated
-// case in on_write_isr
+// flag used to keep track of when regular pwm output is enabled (used in delay expr)
 volatile bool enabled_flag = false;
 
 // flag to keep track of when zero force is outputted for all thrusters (used in
@@ -55,7 +55,7 @@ void on_write_isr(uint8_t reg, size_t n_bytes) {
     // output reset pulse on all pwm pins
     // we need to reinit the thrusters on opening and/or closing of the
     // killswitch latch
-    for (int i = 0; i < N_PWM_PINS; i++) {
+    for (unsigned int i = 0; i < sizeof(PWM_PINS); i++) {
       // set registers.dcs[i] to INIT_DC
       analogWrite(PWM_PINS[i], registers.dcs[i] = INIT_DC);
     }
@@ -70,7 +70,7 @@ void on_write_isr(uint8_t reg, size_t n_bytes) {
     // update pwm outputs if thrusters are enabled
     if (registers.enable == 1) {
       bool zero_force_output = true;
-      for (int i = 0; i < N_PWM_PINS; i++) {
+      for (unsigned int i = 0; i < sizeof(PWM_PINS); i++) {
         if (registers.dcs[i] != INIT_DC) {
           zero_force_output = false;
         }
@@ -92,7 +92,7 @@ void setup() {
 
   /* pwm setup */
   analogWriteResolution(PWM_RES);
-  for (int i = 0; i < N_PWM_PINS; i++) {
+  for (unsigned int i = 0; i < sizeof(PWM_PINS); i++) {
     analogWriteFrequency(PWM_PINS[i], PWM_FREQ);
   }
 }
@@ -108,13 +108,13 @@ void loop() {
   Registers registers_snapshot = registers;
   interrupts();
 
-  // might miss writes that happen during the printing - using below for debugging so write frequency will be low,
-  // likely won't be an issue
+  // might miss writes that happen during the printing - using below for
+  // debugging so write frequency will be low, likely won't be an issue
   if (written_flag == true) {
     Serial.print("enable byte: ");
     Serial.println(registers_snapshot.enable);
     Serial.println("dcs: ");
-    for (int i = 0; i < N_PWM_PINS; i++) {
+    for (unsigned int i = 0; i < sizeof(PWM_PINS); i++) {
       Serial.println(registers_snapshot.dcs[i]);
     }
     written_flag = false;
