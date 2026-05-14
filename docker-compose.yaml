@@ -48,7 +48,7 @@ services:
     ipc: host
     runtime: nvidia
     volumes:
-      - ${PWD}/src:/root/barracuda_ws/src
+      - ${PWD}:/root/barracuda_ws
       - /tmp:/tmp
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ${HOST_XAUTHORITY:-/dev/null}:/root/.Xauthority:ro

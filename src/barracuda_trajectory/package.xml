@@ -1,0 +1,21 @@
+<package format="3">
+  <name>barracuda_trajectory</name>
+  <version>0.0.1</version>
+  <description>Trajectory generation and optimization for AUV using ROS 2 and costmap input.</description>
+  <maintainer email="user@example.com">User</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>nav2_msgs</depend>
+  <depend>nav2_costmap_2d</depend>
+  <depend>nvblox_msgs</depend>
+  <!-- For MoveIt TrajOpt integration (if available) -->
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -28,37 +28,17 @@ RUN apt-get update && apt-get install -y \
         ros-humble-isaac-ros-nitros-image-type \
         ros-humble-isaac-ros-launch-utils \
         ros-humble-isaac-ros-nvblox \
+        ros-humble-foxglove-bridge \
+        ros-humble-joint-state-publisher \
+        python3-smbus \
+        python3-gpiozero \
+    && python3 -m pip install --no-cache-dir 'numpy<2' \
     && cd && curl -L -O https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-$(uname -m)-linux.tar.xz \
     && tar xf helix-25.07.1-$(uname -m)-linux.tar.xz && mv helix-25.07.1-$(uname -m)-linux/hx /usr/local/bin \
     && mkdir -p ~/.config/helix && mv helix-25.07.1-$(uname -m)-linux/runtime ~/.config/helix \
-    && rm -rf helix-25.07.1-$(uname -m)-linux
-
-COPY src /root/barracuda_ws/src
-
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
+    && rm -rf helix-25.07.1-$(uname -m)-linux \
+    && echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
     && echo "[ -f ~/barracuda_ws/install/setup.bash ] && source ~/barracuda_ws/install/setup.bash" >> ~/.bashrc \
-    && . /opt/ros/humble/setup.sh \
-    && cd /root/barracuda_ws/src \
-    && PKG_PATHS="" \
-    && PKG_SKIP="zed_debug isaac_ros_nvblox nvblox_examples_bringup nvblox_image_padding nvblox_ros nvblox_msgs nvblox_ros_common nvblox_ros_python_utils nvblox_rviz_plugin nvblox_nav2 realsense_splitter semantic_label_conversion" \
-    && INCLUDE_ZED_WRAPPER=0 \
-    && if [ -n "$PKG_SEL" ]; then \
-        for pkg in $PKG_SEL; do \
-            if [ "$pkg" != "barracuda_onboard" ] && [ -f "/root/barracuda_ws/src/$pkg/package.xml" ]; then \
-                PKG_PATHS="$PKG_PATHS $pkg"; \
-                if [ "$pkg" = "barracuda_camera" ]; then \
-                    INCLUDE_ZED_WRAPPER=1; \
-                fi; \
-            fi; \
-        done; \
-        PKG_PATHS="barracuda_onboard${PKG_PATHS:+$PKG_PATHS}"; \
-        if [ "$INCLUDE_ZED_WRAPPER" = "1" ] && [ -f "/root/barracuda_ws/src/zed-ros2-wrapper/zed_wrapper/package.xml" ]; then \
-            PKG_PATHS="$PKG_PATHS zed_wrapper"; \
-        fi; \
-    fi \
-    && rosdep install --from-paths . -y --ignore-src --skip-keys="ament_python isaac_ros_dnn_image_encoder isaac_ros_gxf isaac_ros_peoplesemseg_models_install isaac_ros_test isaac_ros_triton isaac_ros_unet isaac_ros_visual_slam nova_carter_navigation" \
-    && cd /root/barracuda_ws \
-    && colcon build --symlink-install --packages-skip $PKG_SKIP ${PKG_PATHS:+--packages-up-to $PKG_PATHS} \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/barracuda_ws/
