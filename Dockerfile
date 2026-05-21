@@ -1,9 +1,6 @@
 ARG BASE_IMAGE=ghcr.io/usc-robosub/barracuda-camera-image:latest
 FROM ${BASE_IMAGE}
 
-ARG PKG_SEL
-ENV PKG_SEL=$PKG_SEL
-
 RUN apt-get update && apt-get install -y \
     vim \
     git \
