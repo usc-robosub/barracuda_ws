@@ -40,5 +40,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /root/barracuda_ws/
 
+RUN apt-get update && apt-get install -y \
+    ros-humble-navigation2 \
+    ros-humble-nav2-bringup \
+    ros-humble-nav2-mppi-controller \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY entrypoint.sh /root/entrypoint.sh
 CMD [ "/bin/bash", "/root/entrypoint.sh" ]
