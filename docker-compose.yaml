@@ -30,10 +30,10 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_IMAGE: ${BASE_IMAGE:-ghcr.io/usc-robosub/barracuda-camera-image:latest}
-        PKG_SEL: ${PKG_SEL:-}
     environment:
       DISPLAY: ${DISPLAY:-:0}
       IMG_ID: ${IMG_ID:-}
+      PKG_SEL: ${PKG_SEL:-}
       QT_X11_NO_MITSHM: "1"
       FASTDDS_BUILTIN_TRANSPORTS: UDPv4
       ROS_DOMAIN_ID: "0"
