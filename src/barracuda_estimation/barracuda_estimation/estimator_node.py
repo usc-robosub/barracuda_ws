@@ -1,22 +1,16 @@
 #!/usr/bin/env python3
 
-from dataclasses import dataclass
 from typing import Optional
 
 import rclpy
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
-from rclpy.duration import Duration
 from rclpy.node import Node
 from sensor_msgs.msg import Image, FluidPressure, Imu, Range
 from std_msgs.msg import Bool, String
 
-
-@dataclass
-class DepthSample:
-    stamp_sec: float
-    z_value: float
-    source: str
+from .gtsam_estimator import GtsamEstimator
+from .measurement_types import DepthSample, DvlSample, ImuSample
 
 
 class BarracudaEstimatorNode(Node):
@@ -40,7 +34,6 @@ class BarracudaEstimatorNode(Node):
         self.declare_parameter("topics.health_output", "/barracuda/estimation/health")
         self.declare_parameter("topics.debug_output", "/barracuda/estimation/debug")
         self.declare_parameter("optimize_period_sec", 0.5)
-        self.declare_parameter("stale_timeout_sec", 1.0)
         self.declare_parameter("depth_mode", "range")
 
         self.imu_topic = self.get_parameter("topics.imu").value
@@ -49,12 +42,11 @@ class BarracudaEstimatorNode(Node):
         self.dvl_topic = self.get_parameter("topics.dvl_odometry").value
         self.camera_topic = self.get_parameter("topics.camera_image").value
         self.depth_mode = self.get_parameter("depth_mode").value
-        self.stale_timeout = Duration(seconds=float(self.get_parameter("stale_timeout_sec").value))
-
         self.latest_imu: Optional[Imu] = None
         self.latest_dvl: Optional[Odometry] = None
         self.latest_depth: Optional[DepthSample] = None
         self.latest_camera: Optional[Image] = None
+        self.estimator = GtsamEstimator()
 
         self.pose_pub = self.create_publisher(
             PoseStamped, self.get_parameter("topics.pose_output").value, 10
@@ -90,11 +82,45 @@ class BarracudaEstimatorNode(Node):
 
     def _on_imu(self, msg: Imu) -> None:
         self.latest_imu = msg
-        # Future GTSAM step: append this measurement into the IMU preintegration buffer.
+        stamp_sec = float(msg.header.stamp.sec) + float(msg.header.stamp.nanosec) * 1e-9
+        sample = ImuSample(
+            stamp_sec=stamp_sec,
+            linear_accel=(
+                float(msg.linear_acceleration.x),
+                float(msg.linear_acceleration.y),
+                float(msg.linear_acceleration.z),
+            ),
+            angular_vel=(
+                float(msg.angular_velocity.x),
+                float(msg.angular_velocity.y),
+                float(msg.angular_velocity.z),
+            ),
+        )
+        self.estimator.add_imu(sample)
 
     def _on_dvl(self, msg: Odometry) -> None:
         self.latest_dvl = msg
-        # Future GTSAM step: use body/world velocity from DVL as a factor at key updates.
+        stamp_sec = float(msg.header.stamp.sec) + float(msg.header.stamp.nanosec) * 1e-9
+        sample = DvlSample(
+            stamp_sec=stamp_sec,
+            position_xyz=(
+                float(msg.pose.pose.position.x),
+                float(msg.pose.pose.position.y),
+                float(msg.pose.pose.position.z),
+            ),
+            velocity_xyz=(
+                float(msg.twist.twist.linear.x),
+                float(msg.twist.twist.linear.y),
+                float(msg.twist.twist.linear.z),
+            ),
+            orientation_xyzw=(
+                float(msg.pose.pose.orientation.x),
+                float(msg.pose.pose.orientation.y),
+                float(msg.pose.pose.orientation.z),
+                float(msg.pose.pose.orientation.w),
+            ),
+        )
+        self.estimator.add_dvl(sample)
 
     def _on_camera(self, msg: Image) -> None:
         self.latest_camera = msg
@@ -103,6 +129,7 @@ class BarracudaEstimatorNode(Node):
     def _on_depth_range(self, msg: Range) -> None:
         stamp_sec = float(msg.header.stamp.sec) + float(msg.header.stamp.nanosec) * 1e-9
         self.latest_depth = DepthSample(stamp_sec=stamp_sec, z_value=float(msg.range), source="range")
+        self.estimator.add_depth(self.latest_depth)
 
     def _on_depth_pressure(self, msg: FluidPressure) -> None:
         stamp_sec = float(msg.header.stamp.sec) + float(msg.header.stamp.nanosec) * 1e-9
@@ -111,43 +138,41 @@ class BarracudaEstimatorNode(Node):
             z_value=float(msg.fluid_pressure),
             source="fluid_pressure",
         )
+        self.estimator.add_depth(self.latest_depth)
 
     def _estimation_step(self) -> None:
-        healthy = self._inputs_ready()
+        status = self.estimator.status()
+        healthy = status.healthy
         self.health_pub.publish(Bool(data=healthy))
 
         debug = {
             "healthy": healthy,
-            "has_imu": self.latest_imu is not None,
-            "has_depth": self.latest_depth is not None,
-            "has_dvl": self.latest_dvl is not None,
+            "has_imu": status.has_imu,
+            "has_depth": status.has_depth,
+            "has_dvl": status.has_dvl,
             "has_camera": self.latest_camera is not None,
+            "imu_buffer_size": status.imu_buffer_size,
+            "gtsam_available": status.gtsam_available,
         }
         self.debug_pub.publish(String(data=str(debug)))
 
-        if not healthy:
+        stamp_sec = float(self.get_clock().now().nanoseconds) * 1e-9
+        estimate = self.estimator.step(stamp_sec)
+        if estimate is None:
             return
 
         pose = PoseStamped()
         pose.header.stamp = self.get_clock().now().to_msg()
-        pose.header.frame_id = "odom"
-
-        # Placeholder pose output so the node has a concrete ROS interface today.
-        # Future work: replace this with the current optimized pose from the GTSAM graph.
-        if self.latest_dvl is not None:
-            pose.pose.position.x = self.latest_dvl.pose.pose.position.x
-            pose.pose.position.y = self.latest_dvl.pose.pose.position.y
-            pose.pose.position.z = self.latest_dvl.pose.pose.position.z
-            pose.pose.orientation = self.latest_dvl.pose.pose.orientation
+        pose.header.frame_id = estimate.frame_id
+        pose.pose.position.x = estimate.position_xyz[0]
+        pose.pose.position.y = estimate.position_xyz[1]
+        pose.pose.position.z = estimate.position_xyz[2]
+        pose.pose.orientation.x = estimate.orientation_xyzw[0]
+        pose.pose.orientation.y = estimate.orientation_xyzw[1]
+        pose.pose.orientation.z = estimate.orientation_xyzw[2]
+        pose.pose.orientation.w = estimate.orientation_xyzw[3]
 
         self.pose_pub.publish(pose)
-
-    def _inputs_ready(self) -> bool:
-        return (
-            self.latest_imu is not None
-            and self.latest_depth is not None
-            and self.latest_dvl is not None
-        )
 
 
 def main(args=None) -> None:
