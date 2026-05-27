@@ -9,3 +9,6 @@
 	path = src/isaac_ros_nvblox
 	url = https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox.git
 	branch = release-3.1
+[submodule "src/barracuda_sonar"]
+	path = src/barracuda_sonar
+	url = git@github.com:usc-robosub/barracuda_sonar.git
