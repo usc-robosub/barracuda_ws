@@ -12,3 +12,6 @@
 [submodule "src/barracuda_sonar"]
 	path = src/barracuda_sonar
 	url = git@github.com:usc-robosub/barracuda_sonar.git
+[submodule "src/ping_altimeter_driver"]
+	path = src/ping_altimeter_driver
+	url = git@github.com:usc-robosub/ping_altimeter_driver.git

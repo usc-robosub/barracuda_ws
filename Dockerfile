@@ -56,9 +56,10 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
             PKG_PATHS="$PKG_PATHS zed_wrapper"; \
         fi; \
     fi \
-    && rosdep install --from-paths . -y --ignore-src --skip-keys="ament_python isaac_ros_dnn_image_encoder isaac_ros_gxf isaac_ros_peoplesemseg_models_install isaac_ros_test isaac_ros_triton isaac_ros_unet isaac_ros_visual_slam nova_carter_navigation" \
+    && rosdep install --from-paths . -y --ignore-src --skip-keys="ament_python bluerobotics-ping isaac_ros_dnn_image_encoder isaac_ros_gxf isaac_ros_peoplesemseg_models_install isaac_ros_test isaac_ros_triton isaac_ros_unet isaac_ros_visual_slam nova_carter_navigation" \
     && cd /root/barracuda_ws \
     && colcon build --symlink-install --packages-skip $PKG_SKIP ${PKG_PATHS:+--packages-up-to $PKG_PATHS} \
+    && pip install bluerobotics-ping \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/barracuda_ws/
