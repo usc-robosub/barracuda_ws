@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>barracuda_360_sonar</name>
+  <version>2.0.0</version>
+  <description>Barracuda AUV with Ping360 Sonar ROS2 Package</description>
+
+  <maintainer email="ghogari@usc.edu">ghogari</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>ament_cmake_python</build_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-bluerobotics-ping-pip</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
