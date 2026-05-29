@@ -56,16 +56,15 @@ cp .env.template .env
 to create your `.env` file from the template.
 
 ## Running GUI apps like `rviz2`
-If you launch GUI apps from inside the container, use the wrapper below instead of calling `docker compose` directly. It forwards the current `DISPLAY`, passes the host's Xauthority file into the container, and avoids stale SSH-forwarded display values such as `localhost:11.0`.
+To launch GUI apps from inside the container, make sure `DISPLAY` and `XAUTHORITY` are set in your shell before starting the container.
 
 ```bash
-chmod +x scripts/compose-with-gui.sh
-./scripts/compose-with-gui.sh up -d host-no-launch
+docker compose up -d host-no-launch
 docker exec -it <container-name> bash
 rviz2
 ```
 
-If you want the window on the Jetson's own monitor, log into the desktop on the Jetson first so the local X server is active. If you are connecting over SSH with X11 forwarding, keep using `ssh -X` or `ssh -Y`; the wrapper will forward that `DISPLAY` into the container.
+If you want the window on the Jetson's own monitor, log into the desktop on the Jetson first so the local X server is active. If you are connecting over SSH with X11 forwarding, keep using `ssh -X` or `ssh -Y`.
 
 ```bash
 [PKG_SEL="<pkg_name_1 pkg_name_2 ...>"] [IMG_ID=<string-appended-to-default-image-name>] docker compose build
