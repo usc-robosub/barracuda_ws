@@ -19,7 +19,10 @@ setup(
     entry_points={
         "console_scripts": [
             f"goal_bridge = {package_name}.goal_bridge:main",
-               f"hardcoded_nav2_publisher = {package_name}.hardcoded_nav2_publisher:main",
+            f"hardcoded_nav2_publisher = {package_name}.hardcoded_nav2_publisher:main",
+            f"pose_to_odometry = {package_name}.pose_to_odometry:main",
+            f"replay_tf_bridge = {package_name}.replay_tf_bridge:main",
+            f"manual_nav_lifecycle_bringup = {package_name}.manual_nav_lifecycle_bringup:main",
         ],
     },
 )
