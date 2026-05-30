@@ -48,12 +48,13 @@ if [ "${SHOULD_BUILD}" = "1" ]; then
 
   cd /root/barracuda_ws/src
   rosdep install --from-paths . -y --ignore-src --skip-keys="ament_python bluerobotics-ping isaac_ros_dnn_image_encoder isaac_ros_gxf isaac_ros_peoplesemseg_models_install isaac_ros_test isaac_ros_triton isaac_ros_unet isaac_ros_visual_slam nova_carter_navigation"
-  pip install bluerobotics-ping
 
   cd /root/barracuda_ws
   colcon build --symlink-install --packages-skip ${PKG_SKIP} ${PKG_PATHS:+--packages-up-to ${PKG_PATHS}}
   cd -
 fi
+
+pip install bluerobotics-ping
 
 source /root/barracuda_ws/install/setup.bash
 
