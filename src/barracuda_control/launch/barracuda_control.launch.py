@@ -12,7 +12,7 @@ def generate_launch_description():
                     [
                         FindPackageShare("barracuda_control"),
                         "launch",
-                        "joystick_wrench_controller.launch.py"
+                        "joystick_pose_controller.launch.py"
                     ]
                 )
             )

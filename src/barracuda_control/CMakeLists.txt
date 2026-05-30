@@ -24,6 +24,7 @@ if(BUILD_TESTING)
 endif()
 
 install(PROGRAMS
+  scripts/joystick_to_pose.py
   scripts/joystick_to_wrench.py
   DESTINATION lib/${PROJECT_NAME}
 )
