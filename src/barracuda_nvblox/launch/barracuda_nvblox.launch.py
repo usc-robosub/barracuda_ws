@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Barracuda nvblox launch."""
 
-from launch import Action, LaunchDescription
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 
@@ -18,6 +20,8 @@ ZED_REMAPPINGS = [
 
 
 def generate_launch_description() -> LaunchDescription:
+    use_sim_time = LaunchConfiguration("use_sim_time")
+
     nvblox_node = ComposableNode(
         name="nvblox_node",
         namespace="barracuda",
@@ -50,6 +54,7 @@ def generate_launch_description() -> LaunchDescription:
                 "pose_frame": "barracuda_camera_center",
                 "esdf_slice_bounds_visualization_attachment_frame_id": "barracuda_camera_center",
             },
+            {"use_sim_time": use_sim_time},
         ],
     )
 
@@ -58,7 +63,10 @@ def generate_launch_description() -> LaunchDescription:
         executable="pose_to_transform",
         namespace="barracuda",
         output="screen",
-        parameters=[{"child_frame_id": "barracuda_camera_center"}],
+        parameters=[
+            {"child_frame_id": "barracuda_camera_center"},
+            {"use_sim_time": use_sim_time},
+        ],
     )
 
     # Static transform to alias the depth frame names
@@ -84,4 +92,13 @@ def generate_launch_description() -> LaunchDescription:
         output="screen",
     )
 
-    return LaunchDescription([pose_to_transform, static_frame_alias, container])
+    return LaunchDescription([
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="false",
+            description="Use ROS simulated time, e.g. during rosbag replay.",
+        ),
+        pose_to_transform,
+        static_frame_alias,
+        container,
+    ])
