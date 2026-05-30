@@ -4,7 +4,6 @@ from math import cos, pi, sin
 import numpy as np
 import rclpy
 from rclpy.node import Node
-from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, LaserScan
 from std_msgs.msg import Header
 
@@ -144,8 +143,7 @@ class Ping360Node(Node):
 
         # Create image
         self.image = np.zeros((self.image_size, self.image_size, 1), np.uint8)
-        self.bridge = CvBridge()
-
+        
         # LaserScan state
         self.ranges = [0.0]
         self.intensities = [0.0]
@@ -222,16 +220,16 @@ class Ping360Node(Node):
 
     def publish_echo_msg(self, angle, data):
         """Publish raw echo message"""
-        msg = Image()
-        msg.header = Header()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = self.frame_id
-        # For now, just publish as image (future: create SonarEcho message)
         try:
-            echo_array = np.array(data, dtype=np.uint8).reshape(1, -1, 1)
-            msg = self.bridge.cv2_to_imgmsg(echo_array, "mono8")
+            echo_array = np.array(data, dtype=np.uint8)
+            msg = Image()
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = self.frame_id
+            msg.height = 1
+            msg.width = len(echo_array)
+            msg.encoding = "mono8"
+            msg.step = msg.width
+            msg.data = echo_array.tobytes()
             self.echo_pub.publish(msg)
         except Exception as e:
             self.get_logger().warn(f"Failed to publish echo: {e}")
@@ -292,13 +290,19 @@ class Ping360Node(Node):
                     except IndexError:
                         pass
 
-            msg = self.bridge.cv2_to_imgmsg(self.image, "mono8")
+            image_2d = self.image[:, :, 0]
+            msg = Image()
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = self.frame_id
+            msg.height = self.image_size
+            msg.width = self.image_size
+            msg.encoding = "mono8"
+            msg.step = self.image_size
+            msg.data = image_2d.tobytes()
             self.image_pub.publish(msg)
 
-        except CvBridgeError as e:
-            self.get_logger().warn(f"CV Bridge error: {e}")
+        except Exception as e:
+            self.get_logger().warn(f"Image publish error: {e}")
 
     def update_sonar_config(self):
         """Update sonar configuration"""
