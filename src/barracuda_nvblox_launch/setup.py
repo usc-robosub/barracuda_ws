@@ -7,10 +7,18 @@ package_name = "barracuda_nvblox_launch"
 setup(
     name=package_name,
     version="0.1.0",
+<<<<<<< HEAD
     packages=[package_name],
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name + "/launch", ["launch/barracuda_nvblox.launch.py", "launch/barracuda_nvblox_launch.launch.py"]),
+=======
+    packages=[],
+    py_modules=[],
+    data_files=[
+        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
+        ("share/" + package_name + "/launch", ["launch/barracuda_nvblox.launch.py"]),
+>>>>>>> origin/main
         ("share/" + package_name, ["package.xml"]),
     ],
     install_requires=["setuptools"],

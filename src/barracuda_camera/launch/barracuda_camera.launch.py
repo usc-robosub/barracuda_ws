@@ -24,6 +24,8 @@ def generate_launch_description():
             "camera_model": "zedm",
             "camera_name": "barracuda",
             "enable_positional_tracking": "true",
+            "publish_tf": "true",
+            "publish_map_tf": "true",
         }.items(),
     )
 

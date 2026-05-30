@@ -286,7 +286,7 @@ class WaterLinkedDVLDriver(Node):
                 twist_cov = [0.0] * 36
                 for i in range(3):
                     for j in range(3):
-                        twist_cov[i*6 + j] = covariance[i][j]
+                        twist_cov[i*6 + j] = float(covariance[i][j])
                 odom_msg.twist.covariance = twist_cov
             
             # Publish odometry
@@ -343,12 +343,12 @@ class WaterLinkedDVLDriver(Node):
             pose_msg.pose.orientation.w = quat[3]
             
             # Covariance (simplified - using std as diagonal elements)
-            std = data.get('std', 0.01)
+            std = float(data.get('std', 0.01))
             pose_cov = [0.0] * 36
             # Position covariance
-            pose_cov[0] = std * std   # x
-            pose_cov[7] = std * std   # y
-            pose_cov[14] = std * std  # z
+            pose_cov[0] = float(std * std)   # x
+            pose_cov[7] = float(std * std)   # y
+            pose_cov[14] = float(std * std)  # z
             # Orientation covariance (rough estimate)
             pose_cov[21] = 0.01  # roll
             pose_cov[28] = 0.01  # pitch
