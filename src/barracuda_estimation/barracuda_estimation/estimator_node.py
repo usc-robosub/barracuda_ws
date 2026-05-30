@@ -15,21 +15,21 @@ from .measurement_types import DepthSample, DvlSample, ImuSample
 
 class BarracudaEstimatorNode(Node):
     """
-    Minimal direct-subscription estimator skeleton.
+    Direct-subscription estimator entry point for the Barracuda stack.
 
-    This node subscribes directly to the existing /barracuda sensor topics and keeps
-    the latest measurements in one place. It is intentionally lightweight: the IMU
-    preintegration / GTSAM graph update steps are placeholders for future work.
+    This node subscribes to the active `/barracuda/...` sensor interfaces,
+    forwards measurements into `GtsamEstimator`, and publishes estimator
+    health, debug status, and the latest pose output.
     """
 
     def __init__(self) -> None:
         super().__init__("estimator_node")
 
-        self.declare_parameter("topics.imu", "/barracuda/imu/data")
+        self.declare_parameter("topics.imu", "/barracuda/zed_node/imu/data")
         self.declare_parameter("topics.depth_range", "/barracuda/depth")
         self.declare_parameter("topics.depth_pressure", "")
         self.declare_parameter("topics.dvl_odometry", "/barracuda/dvl/odometry")
-        self.declare_parameter("topics.camera_image", "/barracuda/left_camera_image")
+        self.declare_parameter("topics.camera_image", "/barracuda/zed_node/rgb/color/rect/image")
         self.declare_parameter("topics.pose_output", "/barracuda/estimation/pose")
         self.declare_parameter("topics.health_output", "/barracuda/estimation/health")
         self.declare_parameter("topics.debug_output", "/barracuda/estimation/debug")
@@ -75,7 +75,7 @@ class BarracudaEstimatorNode(Node):
         self.timer = self.create_timer(optimize_period_sec, self._estimation_step)
 
         self.get_logger().info(
-            "Estimator skeleton listening directly to existing topics: "
+            "Estimator listening directly to sensor topics: "
             f"imu={self.imu_topic}, depth={self.depth_range_topic or self.depth_pressure_topic}, "
             f"dvl={self.dvl_topic}, camera={self.camera_topic}"
         )
@@ -124,7 +124,6 @@ class BarracudaEstimatorNode(Node):
 
     def _on_camera(self, msg: Image) -> None:
         self.latest_camera = msg
-        # Future SLAM step: feed vision landmarks or loop-closure observations.
 
     def _on_depth_range(self, msg: Range) -> None:
         stamp_sec = float(msg.header.stamp.sec) + float(msg.header.stamp.nanosec) * 1e-9

@@ -1,39 +1,49 @@
 # barracuda_estimation
 
-ROS2 estimation package for Barracuda that subscribes directly to the existing
-`/barracuda/...` sensor topics and provides the current landing place for EKF
-and future GTSAM-based state estimation work.
+ROS2 estimation package for Barracuda that subscribes directly to the active
+`/barracuda/...` sensor topics and hosts the EKF and GTSAM-based estimation
+paths used by the current stack.
 
 ## What is in this package
 
-This package currently does three things:
+This package currently does four things:
 
 * subscribes directly to the expected sensor topics
-  * `/barracuda/imu/data`
+  * `/barracuda/zed_node/imu/data`
   * `/barracuda/depth`
   * `/barracuda/dvl/odometry`
-  * `/barracuda/left_camera_image`
+  * `/barracuda/zed_node/rgb/color/rect/image`
 * launches local/global `robot_localization` EKF nodes
 * runs an estimator node that publishes:
   * `/barracuda/estimation/health`
   * `/barracuda/estimation/debug`
   * `/barracuda/estimation/pose`
+* runs a live ZED pose graph node that publishes:
+  * `/barracuda/gtsam_pose`
+  * `/barracuda/gtsam_path`
+  * `/barracuda/gtsam_health`
+  * `/barracuda/gtsam_debug`
 
 The direct-subscription design replaced the older idea of building a separate
 sensor republisher layer. The estimator side now consumes the existing
 `/barracuda/...` interfaces directly.
 
+At the moment, the live camera/IMU defaults are aligned with the ZED topics
+that are actually published in the current Barracuda stack. The depth input is
+still modeled as a `Range` or `FluidPressure` measurement; using the ZED depth
+image directly will require a separate adapter step rather than a simple topic
+rename.
+
 ## Current implementation status
 
-The package is no longer just a topic placeholder.
-
-It now includes:
+The package currently includes:
 
 * a ROS2-facing node in `barracuda_estimation/estimator_node.py`
 * a backend estimator in `barracuda_estimation/gtsam_estimator.py`
 * an IMU sample buffer in `barracuda_estimation/imu_buffer.py`
 * typed measurement containers in `barracuda_estimation/measurement_types.py`
 * a shared state container in `barracuda_estimation/state_estimate.py`
+* a live Pose3 graph node in `barracuda_estimation/zed_pose_graph_node.py`
 
 The backend has two execution paths:
 
@@ -48,6 +58,12 @@ The backend has two execution paths:
   * returns the current state estimate
 
 This is still an early online-style integration, not a final tuned estimator.
+
+The live ZED pose graph is a separate camera-only path for the current hardware
+reality: it subscribes to `/barracuda/zed_node/pose`, builds a simple online
+Pose3 graph in GTSAM, and publishes the optimized pose/path for external
+visualization. This is intended as a practical intermediate step while the full
+IMU + depth + DVL graph is still blocked by sensor availability.
 
 ## EKF structure
 
@@ -67,7 +83,7 @@ This package has already been exercised in a few ways:
 
 * Jetson / Docker launch validation
   * the package built and launched on the Jetson in Docker
-  * the estimator node and both EKF nodes came up
+  * the estimator node, both EKF nodes, and the ZED pose graph node came up
   * health stayed false in the no-sensor test, which matched the fact that the
     expected sensor topics had zero publishers in that session
 * backend-only replay validation
@@ -105,6 +121,12 @@ Launch the ROS2 package:
 
 ```bash
 ros2 launch barracuda_estimation barracuda_estimation.launch.py
+```
+
+Run only the live ZED pose graph node:
+
+```bash
+ros2 run barracuda_estimation zed_pose_graph_node
 ```
 
 Run the backend-only replay harness:

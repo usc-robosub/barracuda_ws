@@ -43,6 +43,20 @@ def generate_launch_description():
                 name="estimator_node",
                 output="screen",
                 emulate_tty=True,
+                parameters=[
+                    {
+                        "topics.imu": "/barracuda/zed_node/imu/data",
+                        "topics.camera_image": "/barracuda/zed_node/rgb/color/rect/image",
+                    }
+                ],
+            ),
+            Node(
+                package="barracuda_estimation",
+                executable="zed_pose_graph_node",
+                namespace="barracuda",
+                name="zed_pose_graph_node",
+                output="screen",
+                emulate_tty=True,
             ),
         ]
     )

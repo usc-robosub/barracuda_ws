@@ -3,6 +3,8 @@ from glob import glob
 from setuptools import find_packages, setup
 
 package_name = "barracuda_estimation"
+maintainer_name = "Barracuda"
+maintainer_email = "uscauv@gmail.com"
 
 setup(
     name=package_name,
@@ -19,14 +21,15 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="root",
-    maintainer_email="root@todo.todo",
-    description="Direct-subscription estimator skeleton for Barracuda.",
+    maintainer=maintainer_name,
+    maintainer_email=maintainer_email,
+    description="ROS 2 estimation package for the Barracuda AUV stack.",
     license="Apache-2.0",
     tests_require=[],
     entry_points={
         "console_scripts": [
             "estimator_node = barracuda_estimation.estimator_node:main",
+            "zed_pose_graph_node = barracuda_estimation.zed_pose_graph_node:main",
         ],
     },
 )

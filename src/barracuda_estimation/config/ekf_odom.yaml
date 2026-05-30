@@ -16,8 +16,10 @@ barracuda/ekf_odom:
     base_link_frame: barracuda/base_link
     world_frame: barracuda/odom
 
-    # Local filter: fuse continuous onboard sensors only.
-    odom0: /barracuda/dvl/odometry
+    # Local filter: use the live ZED odometry feed as the currently available
+    # body-motion source. Replace with /barracuda/dvl/odometry when the DVL
+    # driver is online again.
+    odom0: /barracuda/zed_node/odom
     odom0_config: [false, false, false,
                    false, false, false,
                    true,  true,  true,
@@ -30,7 +32,7 @@ barracuda/ekf_odom:
     odom0_pose_rejection_threshold: 5.0
     odom0_twist_rejection_threshold: 2.0
 
-    imu0: /barracuda/imu/data
+    imu0: /barracuda/zed_node/imu/data
     imu0_config: [false, false, false,
                   false, false, false,
                   false, false, false,

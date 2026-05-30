@@ -16,10 +16,9 @@ barracuda/ekf_map:
     base_link_frame: barracuda/base_link
     world_frame: map
 
-    # Global filter: fuse local continuous sensors plus a global pose source
-    # when one is available (for example /barracuda/slam/odometry from a future
-    # GTSAM mapping/localization node).
-    odom0: /barracuda/slam/odometry
+    # Global filter: until the dedicated GTSAM odometry topic exists, use the
+    # live ZED odometry feed as the currently available pose source.
+    odom0: /barracuda/zed_node/odom
     odom0_config: [true,  true,  true,
                    true,  true,  true,
                    false, false, false,
@@ -45,7 +44,7 @@ barracuda/ekf_map:
     odom1_pose_rejection_threshold: 5.0
     odom1_twist_rejection_threshold: 2.0
 
-    imu0: /barracuda/imu/data
+    imu0: /barracuda/zed_node/imu/data
     imu0_config: [false, false, false,
                   false, false, false,
                   false, false, false,
