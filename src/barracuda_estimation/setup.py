@@ -29,7 +29,6 @@ setup(
     entry_points={
         "console_scripts": [
             "estimator_node = barracuda_estimation.estimator_node:main",
-            "zed_pose_graph_node = barracuda_estimation.zed_pose_graph_node:main",
         ],
     },
 )

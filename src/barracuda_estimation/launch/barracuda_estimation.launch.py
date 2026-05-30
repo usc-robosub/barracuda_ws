@@ -50,13 +50,5 @@ def generate_launch_description():
                     }
                 ],
             ),
-            Node(
-                package="barracuda_estimation",
-                executable="zed_pose_graph_node",
-                namespace="barracuda",
-                name="zed_pose_graph_node",
-                output="screen",
-                emulate_tty=True,
-            ),
         ]
     )
