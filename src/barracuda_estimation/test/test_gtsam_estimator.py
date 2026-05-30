@@ -161,8 +161,8 @@ class TestGtsamEstimatorBasic(unittest.TestCase):
         est.add_dvl(_dvl())
         self.assertTrue(est.is_ready())
 
-class TestPose3FromMeasurements(unittest.TestCase):
-    """_pose3_from_measurements must use DVL xyz only."""
+class TestDvlToInitialPose3(unittest.TestCase):
+    """_dvl_to_initial_pose3 must use DVL xyz and quaternion only."""
 
     def setUp(self):
         self.gtsam_stub, self.FakeGPSFactor, self.FakePose3, self.FakePoint3 = _make_gtsam_stub()
@@ -189,7 +189,7 @@ class TestPose3FromMeasurements(unittest.TestCase):
 
         with patch.dict(sys.modules, {"gtsam": self.gtsam_stub,
                                        "gtsam.symbol_shorthand": self.gtsam_stub}):
-            pose = est._pose3_from_measurements()
+            pose = est._dvl_to_initial_pose3()
 
         # Pose3 must be constructed with DVL x, y, z — NOT depth
         call_args = self.gtsam_stub.Point3.call_args
@@ -207,7 +207,7 @@ class TestPose3FromMeasurements(unittest.TestCase):
 
         with patch.dict(sys.modules, {"gtsam": self.gtsam_stub,
                                        "gtsam.symbol_shorthand": self.gtsam_stub}):
-            est._pose3_from_measurements()
+            est._dvl_to_initial_pose3()
 
         self.gtsam_stub.Rot3.Quaternion.assert_called_once()
         args = self.gtsam_stub.Rot3.Quaternion.call_args[0]

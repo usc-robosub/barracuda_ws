@@ -100,31 +100,20 @@ class GtsamEstimator:
         return len(self.imu_buffer) > 0 and self.latest_depth is not None and self.latest_dvl is not None
 
     def step(self, stamp_sec: float) -> Optional[StateEstimate]:
-        """
-        Advance the estimator once enough measurements are available.
-
-        Runs IMU preintegration, depth constraints, DVL velocity constraints,
-        and batch Levenberg-Marquardt optimization.
-
-        Remaining future work:
-        - better keyframe / update policy
-        - bias propagation and tuning
-        - more realistic depth / DVL factor models
-        - camera or SLAM factor insertion
-        """
+        """Advance the estimator. Returns None if not yet ready (missing IMU/depth/DVL)."""
         if not self.is_ready():
             return None
 
-        estimate = self._step_with_gtsam(stamp_sec)
+        estimate = self._run_graph_update(stamp_sec)
         self.latest_state = estimate
         self.imu_buffer.clear()
         return estimate
 
-    def _step_with_gtsam(self, stamp_sec: float) -> StateEstimate:
+    def _run_graph_update(self, stamp_sec: float) -> StateEstimate:
         assert self.latest_dvl is not None
         assert self.latest_depth is not None
 
-        current_pose = self._pose3_from_measurements()
+        current_pose = self._dvl_to_initial_pose3()
         current_velocity = np.asarray(self.latest_dvl.velocity_xyz, dtype=float)
 
         if self.key_index < 0:
@@ -194,9 +183,9 @@ class GtsamEstimator:
             ),
         )
 
-    def _pose3_from_measurements(self):
-        """Build initial pose guess from DVL only. Depth is NOT mixed in here;
-        it enters the graph as an independent factor via _depth_factor."""
+    def _dvl_to_initial_pose3(self):
+        """Build initial pose guess from DVL position and orientation only.
+        Depth enters the graph as an independent factor via _depth_factor."""
         assert self.latest_dvl is not None
 
         x, y, z = self.latest_dvl.position_xyz

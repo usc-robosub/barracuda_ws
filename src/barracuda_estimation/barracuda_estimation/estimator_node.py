@@ -151,7 +151,6 @@ class BarracudaEstimatorNode(Node):
             "has_dvl": status.has_dvl,
             "has_camera": self.latest_camera is not None,
             "imu_buffer_size": status.imu_buffer_size,
-            "gtsam_available": status.gtsam_available,
         }
         self.debug_pub.publish(String(data=str(debug)))
 
