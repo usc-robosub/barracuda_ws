@@ -87,7 +87,7 @@ class JoystickToPose(Node):
         self.last_time = now
 
         self.target_pose.header.stamp = now.to_msg()
-        self.target.pose.header.frame_id = self.get_parameter("frame_id").value
+        self.target_pose.header.frame_id = self.get_parameter("frame_id").value
 
         if self.latest_joy is None:
             self.pose_publisher.publish(self.target_pose)
