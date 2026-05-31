@@ -51,8 +51,8 @@ def generate_launch_description() -> LaunchDescription:
             {"dynamic_mapper.workspace_bounds_max_height_m": 3.0},
             {
                 "map_clearing_frame_id": "map",
-                "pose_frame": "barracuda_camera_center",
-                "esdf_slice_bounds_visualization_attachment_frame_id": "barracuda_camera_center",
+                "pose_frame": "barracuda/zedm_camera_center",
+                "esdf_slice_bounds_visualization_attachment_frame_id": "barracuda/zedm_camera_center",
             },
             {"use_sim_time": use_sim_time},
         ],
@@ -64,24 +64,11 @@ def generate_launch_description() -> LaunchDescription:
         namespace="barracuda",
         output="screen",
         parameters=[
-            {"child_frame_id": "barracuda_camera_center"},
+            {"child_frame_id": "barracuda/zedm_camera_center"},
             {"use_sim_time": use_sim_time},
         ],
     )
 
-    # Static transform to alias the depth frame names
-    # ZED publishes depth with frame: barracuda_left_camera_frame_optical
-    # TF tree has: barracuda_left_camera_optical_frame
-    static_frame_alias = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        arguments=[
-            "0", "0", "0", "0", "0", "0",
-            "barracuda_left_camera_optical_frame",
-            "barracuda_left_camera_frame_optical",
-        ],
-        output="screen",
-    )
 
     container = ComposableNodeContainer(
         name=CONTAINER_NAME,
@@ -99,6 +86,5 @@ def generate_launch_description() -> LaunchDescription:
             description="Use ROS simulated time, e.g. during rosbag replay.",
         ),
         pose_to_transform,
-        static_frame_alias,
         container,
     ])
