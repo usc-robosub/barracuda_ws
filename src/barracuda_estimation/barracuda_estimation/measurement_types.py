@@ -23,3 +23,10 @@ class DvlSample:
     position_xyz: tuple[float, float, float]
     velocity_xyz: tuple[float, float, float]
     orientation_xyzw: tuple[float, float, float, float]
+
+
+@dataclass
+class PoseSample:
+    stamp_sec: float
+    position_xyz: tuple[float, float, float]
+    orientation_xyzw: tuple[float, float, float, float]

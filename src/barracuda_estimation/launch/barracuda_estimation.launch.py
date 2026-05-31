@@ -46,7 +46,7 @@ def generate_launch_description():
                 parameters=[
                     {
                         "topics.imu": "/barracuda/zed_node/imu/data",
-                        "topics.camera_image": "/barracuda/zed_node/rgb/color/rect/image",
+                        "topics.point_cloud": "/barracuda/zed_node/point_cloud/cloud_registered",
                     }
                 ],
             ),
