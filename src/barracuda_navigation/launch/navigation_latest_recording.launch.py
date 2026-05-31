@@ -81,7 +81,7 @@ def generate_launch_description():
             navigation_launch,
             launch_arguments={
                 "use_sim_time": "true",
-                "use_hardcoded_test_data": "false",
+                "use_replay_tf_bridge": "true",
             }.items(),
         ),
         OpaqueFunction(

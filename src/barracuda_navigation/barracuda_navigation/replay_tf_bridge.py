@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bridge replayed pose/odometry topics into Nav2-friendly TF and odometry."""
+"""Bridge replayed ZED pose/odometry topics into Nav2-friendly TF and odometry."""
 
 import math
 
@@ -85,7 +85,7 @@ class ReplayTfBridge(Node):
         self.declare_parameter("filtered_odom_topic", "/odometry/filtered")
         self.declare_parameter("map_frame", "map")
         self.declare_parameter("odom_frame", "odom")
-        self.declare_parameter("base_frame", "base_link")
+        self.declare_parameter("base_frame", "barracuda/base_link")
 
         self._map_frame = self.get_parameter("map_frame").value
         self._odom_frame = self.get_parameter("odom_frame").value
@@ -127,7 +127,35 @@ class ReplayTfBridge(Node):
         filtered.pose = msg.pose
         filtered.twist = msg.twist
         self._filtered_odom_pub.publish(filtered)
+        if self._latest_pose is None:
+            self._publish_fallback_from_odom(msg)
         self._publish_if_ready()
+
+    def _publish_fallback_from_odom(self, odom: Odometry):
+        stamp = odom.header.stamp
+
+        tf_map_odom = TransformStamped()
+        tf_map_odom.header.stamp = stamp
+        tf_map_odom.header.frame_id = self._map_frame
+        tf_map_odom.child_frame_id = self._odom_frame
+        tf_map_odom.transform.translation.x = 0.0
+        tf_map_odom.transform.translation.y = 0.0
+        tf_map_odom.transform.translation.z = 0.0
+        tf_map_odom.transform.rotation.x = 0.0
+        tf_map_odom.transform.rotation.y = 0.0
+        tf_map_odom.transform.rotation.z = 0.0
+        tf_map_odom.transform.rotation.w = 1.0
+
+        tf_odom_base = TransformStamped()
+        tf_odom_base.header.stamp = stamp
+        tf_odom_base.header.frame_id = self._odom_frame
+        tf_odom_base.child_frame_id = self._base_frame
+        tf_odom_base.transform.translation.x = odom.pose.pose.position.x
+        tf_odom_base.transform.translation.y = odom.pose.pose.position.y
+        tf_odom_base.transform.translation.z = odom.pose.pose.position.z
+        tf_odom_base.transform.rotation = odom.pose.pose.orientation
+
+        self._tf_broadcaster.sendTransform([tf_map_odom, tf_odom_base])
 
     def _publish_if_ready(self):
         if self._latest_pose is None or self._latest_odom is None:
