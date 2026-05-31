@@ -69,6 +69,19 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
+    # ZED depth image may use barracuda_left_camera_frame_optical while
+    # the URDF TF tree exposes barracuda/zedm_left_camera_optical_frame.
+    static_frame_alias = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "0", "0", "0", "0", "0", "0",
+            "barracuda/zedm_left_camera_optical_frame",
+            "barracuda_left_camera_frame_optical",
+        ],
+        output="screen",
+    )
+
 
     container = ComposableNodeContainer(
         name=CONTAINER_NAME,
@@ -86,5 +99,6 @@ def generate_launch_description() -> LaunchDescription:
             description="Use ROS simulated time, e.g. during rosbag replay.",
         ),
         pose_to_transform,
+        static_frame_alias,
         container,
     ])
