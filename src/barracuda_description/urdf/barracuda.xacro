@@ -48,7 +48,7 @@
     <xacro:altimeter parent_link="$(arg namespace)/barracuda_link" altimeter_name="ping1d" namespace="$(arg namespace)" />
 
     <xacro:include filename="$(find barracuda_description)/urdf/depth_camera.xacro"/>
-    <xacro:depth_camera parent_link="$(arg namespace)/barracuda_link" namespace="$(arg namespace)"/>
+    <xacro:depth_camera parent_link="$(arg namespace)/base_link" namespace="$(arg namespace)"/>
 
     <gazebo>
         <plugin name="uuv_plugin" filename="libuuv_underwater_object_ros_plugin.so">

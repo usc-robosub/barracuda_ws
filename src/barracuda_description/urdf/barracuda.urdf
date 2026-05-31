@@ -457,7 +457,7 @@
   </gazebo>
   <!-- <xacro:property name="parent_link" default="" /> -->
   <joint name="zedm_base_joint" type="fixed">
-    <parent link="barracuda/barracuda_link"/>
+    <parent link="barracuda/base_link"/>
     <child link="barracuda/zedm_base_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.3 0.0 0.0"/>
   </joint>
