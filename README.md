@@ -133,7 +133,7 @@ If you want a shell without starting NVBLOX:
 docker compose up --build -d host-no-launch
 docker exec -it <container-name> bash
 source /root/barracuda_ws/install/setup.bash
-ros2 launch barracuda_nvblox_launch barracuda_nvblox.launch.py
+ros2 launch barracuda_nvblox barracuda_nvblox.launch.py
 ```
 
 If startup reports `nvblox_ros package not found`, verify the image build completed and that Isaac ROS apt packages were installed successfully.
