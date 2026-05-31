@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Barracuda Nav2 navigation launch."""
+"""Barracuda Nav2 MPPI navigation launch."""
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, TimerAction
@@ -26,34 +26,19 @@ def generate_launch_description():
             description="Use ROS simulated time, e.g. during rosbag replay.",
         ),
         DeclareLaunchArgument(
-            "use_replay_tf_bridge",
-            default_value="false",
-            description="Publish map/odom/base TF from replayed ZED topics (enable for bag replay).",
-        ),
-        DeclareLaunchArgument(
-            "use_lifecycle_manager",
+            "use_hardcoded_test_data",
             default_value="true",
-            description="Use nav2_lifecycle_manager to configure and activate Nav2 nodes.",
+            description="Launch the hardcoded fake map/pose/goal publisher for testing.",
         ),
         DeclareLaunchArgument(
             "lifecycle_manager_delay_sec",
             default_value="0.0",
-            description="Delay Nav2 lifecycle startup to let TF and map inputs come online.",
+            description="Delay starting Nav2 lifecycle manager to let inputs come online.",
         ),
         DeclareLaunchArgument(
-            "map_frame",
-            default_value="map",
-            description="Global frame used by nvblox map slices.",
-        ),
-        DeclareLaunchArgument(
-            "base_frame",
-            default_value="barracuda/base_link",
-            description="Robot base frame used by Nav2.",
-        ),
-        DeclareLaunchArgument(
-            "run_simple_planner",
-            default_value="false",
-            description="Also run the lightweight straight-line planner for debugging.",
+            "use_lifecycle_manager",
+            default_value="true",
+            description="Use nav2_lifecycle_manager for bringup; disable for manual replay activation.",
         ),
 
         Node(
@@ -76,6 +61,7 @@ def generate_launch_description():
                 LaunchConfiguration("params_file"),
                 {"use_sim_time": LaunchConfiguration("use_sim_time")},
             ],
+            remappings=[("/cmd_vel", "/barracuda/cmd_vel")],
         ),
 
         Node(
@@ -136,6 +122,7 @@ def generate_launch_description():
             condition=UnlessCondition(LaunchConfiguration("use_lifecycle_manager")),
         ),
 
+        # Goal bridge: converts /target_pose → NavigateToPose action goals
         Node(
             package="barracuda_navigation",
             executable="goal_bridge",
@@ -149,27 +136,17 @@ def generate_launch_description():
             executable="replay_tf_bridge",
             name="replay_tf_bridge",
             output="screen",
-            parameters=[
-                {"use_sim_time": LaunchConfiguration("use_sim_time")},
-                {"map_frame": LaunchConfiguration("map_frame")},
-                {"base_frame": LaunchConfiguration("base_frame")},
-            ],
-            condition=IfCondition(LaunchConfiguration("use_replay_tf_bridge")),
+            parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}],
+            condition=UnlessCondition(LaunchConfiguration("use_hardcoded_test_data")),
         ),
 
+        # Hardcoded map + TF + goal publisher for testing without real sensors.
         Node(
             package="barracuda_navigation",
-            executable="simple_costmap_trajectory",
-            name="simple_costmap_trajectory",
+            executable="hardcoded_nav2_publisher",
+            name="hardcoded_nav2_publisher",
             output="screen",
-            parameters=[
-                {"use_sim_time": LaunchConfiguration("use_sim_time")},
-                {"map_frame": LaunchConfiguration("map_frame")},
-                {"base_frame": LaunchConfiguration("base_frame")},
-                {"costmap_topic": "/barracuda/nvblox_node/static_map_slice"},
-                {"goal_topic": "/target_pose"},
-                {"trajectory_topic": "/planned_trajectory"},
-            ],
-            condition=IfCondition(LaunchConfiguration("run_simple_planner")),
+            parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}],
+            condition=IfCondition(LaunchConfiguration("use_hardcoded_test_data")),
         ),
     ])

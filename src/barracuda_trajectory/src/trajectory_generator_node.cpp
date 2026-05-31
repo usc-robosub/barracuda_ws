@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -73,6 +74,11 @@ std::vector<std::pair<float, float>> bspline(
 TrajectoryGenerator::TrajectoryGenerator()
 : Node("trajectory_generator")
 {
+  this->declare_parameter("obstacle_distance_threshold", 0.55);
+  this->declare_parameter("goal_obstacle_distance_threshold", 0.20);
+  this->declare_parameter("start_search_radius_cells", 12);
+  this->declare_parameter("goal_search_radius_cells", 12);
+
   costmap_sub_ = this->create_subscription<nvblox_msgs::msg::DistanceMapSlice>(
     "/barracuda/nvblox_node/static_map_slice", 10,
     std::bind(&TrajectoryGenerator::costmap_callback, this, std::placeholders::_1));
@@ -164,24 +170,134 @@ void TrajectoryGenerator::costmap_callback(const nvblox_msgs::msg::DistanceMapSl
       };
     };
 
-  const auto [start_x, start_y] = world_to_cell(
+  const float obstacle_distance_threshold =
+    this->get_parameter("obstacle_distance_threshold").as_double();
+  const float goal_obstacle_distance_threshold = std::clamp(
+    static_cast<float>(this->get_parameter("goal_obstacle_distance_threshold").as_double()),
+    0.0F,
+    obstacle_distance_threshold);
+  const int start_search_radius_cells = static_cast<int>(std::max<int64_t>(
+      0,
+      this->get_parameter("start_search_radius_cells").as_int()));
+    const int goal_search_radius_cells = static_cast<int>(std::max<int64_t>(
+      0,
+      this->get_parameter("goal_search_radius_cells").as_int()));
+
+  const auto is_cell_traversable =
+    [msg, width, height, unknown](int cx, int cy, float min_distance) {
+      if (cx < 0 || cy < 0 || cx >= width || cy >= height) {
+        return false;
+      }
+      const size_t idx =
+        static_cast<size_t>(cy) * static_cast<size_t>(width) + static_cast<size_t>(cx);
+      if (idx >= msg->data.size()) {
+        return false;
+      }
+      const float d = msg->data[idx];
+      return d != unknown && d >= min_distance;
+    };
+
+  const auto [raw_start_x, raw_start_y] = world_to_cell(
     current_pose_.pose.position.x, current_pose_.pose.position.y);
-  const auto [goal_x, goal_y] = world_to_cell(
+  const auto [raw_goal_x, raw_goal_y] = world_to_cell(
     goal_pose_.pose.position.x, goal_pose_.pose.position.y);
 
-  if (start_x < 1 || start_y < 1 || start_x >= width - 1 || start_y >= height - 1) {
+  const auto clamp_cell = [width, height](int cx, int cy) {
+      return std::pair<int, int>{
+        std::clamp(cx, 0, width - 1),
+        std::clamp(cy, 0, height - 1)
+      };
+    };
+
+  const auto find_nearest_traversable_cell =
+    [width, height, &is_cell_traversable](int cx, int cy, float min_distance, int max_radius)
+    -> std::optional<std::pair<int, int>> {
+      if (is_cell_traversable(cx, cy, min_distance)) {
+        return std::pair<int, int>{cx, cy};
+      }
+
+      for (int r = 1; r <= max_radius; ++r) {
+        int min_x = std::max(0, cx - r);
+        int max_x = std::min(width - 1, cx + r);
+        int min_y = std::max(0, cy - r);
+        int max_y = std::min(height - 1, cy + r);
+
+        for (int x = min_x; x <= max_x; ++x) {
+          if (is_cell_traversable(x, min_y, min_distance)) {
+            return std::pair<int, int>{x, min_y};
+          }
+          if (is_cell_traversable(x, max_y, min_distance)) {
+            return std::pair<int, int>{x, max_y};
+          }
+        }
+        for (int y = min_y + 1; y < max_y; ++y) {
+          if (is_cell_traversable(min_x, y, min_distance)) {
+            return std::pair<int, int>{min_x, y};
+          }
+          if (is_cell_traversable(max_x, y, min_distance)) {
+            return std::pair<int, int>{max_x, y};
+          }
+        }
+      }
+
+      return std::nullopt;
+    };
+
+  auto [start_x, start_y] = clamp_cell(raw_start_x, raw_start_y);
+  auto [goal_x, goal_y] = clamp_cell(raw_goal_x, raw_goal_y);
+
+  if (start_x != raw_start_x || start_y != raw_start_y) {
     RCLCPP_WARN(
       this->get_logger(),
-      "Current pose outside map bounds (start_x=%d start_y=%d width=%d height=%d), skipping",
-      start_x, start_y, width, height);
-    return;
+      "Current pose outside map bounds (start_x=%d start_y=%d width=%d height=%d), clamped to (%d,%d)",
+      raw_start_x, raw_start_y, width, height, start_x, start_y);
   }
-  if (goal_x < 1 || goal_y < 1 || goal_x >= width - 1 || goal_y >= height - 1) {
+  if (goal_x != raw_goal_x || goal_y != raw_goal_y) {
     RCLCPP_WARN(
       this->get_logger(),
-      "Target pose outside map bounds (goal_x=%d goal_y=%d width=%d height=%d), skipping",
-      goal_x, goal_y, width, height);
-    return;
+      "Target pose outside map bounds (goal_x=%d goal_y=%d width=%d height=%d), clamped to (%d,%d)",
+      raw_goal_x, raw_goal_y, width, height, goal_x, goal_y);
+  }
+
+  if (!is_cell_traversable(start_x, start_y, obstacle_distance_threshold)) {
+    const auto recovered_start = find_nearest_traversable_cell(
+      start_x, start_y, obstacle_distance_threshold, start_search_radius_cells);
+    if (!recovered_start.has_value()) {
+      RCLCPP_WARN(
+        this->get_logger(),
+        "Current pose cell is occupied/unknown (x=%d y=%d) and no traversable start found within radius=%d, skipping trajectory generation",
+        start_x, start_y, start_search_radius_cells);
+      return;
+    }
+
+    const int original_start_x = start_x;
+    const int original_start_y = start_y;
+    start_x = recovered_start->first;
+    start_y = recovered_start->second;
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Current pose cell is occupied/unknown at (x=%d y=%d), using nearby traversable start (x=%d y=%d)",
+      original_start_x, original_start_y, start_x, start_y);
+  }
+  if (!is_cell_traversable(goal_x, goal_y, goal_obstacle_distance_threshold)) {
+    const auto recovered_goal = find_nearest_traversable_cell(
+      goal_x, goal_y, goal_obstacle_distance_threshold, goal_search_radius_cells);
+    if (!recovered_goal.has_value()) {
+      RCLCPP_WARN(
+        this->get_logger(),
+        "Target pose cell is occupied/unknown (x=%d y=%d, goal_threshold=%.2f) and no traversable goal found within radius=%d, skipping trajectory generation",
+        goal_x, goal_y, goal_obstacle_distance_threshold, goal_search_radius_cells);
+      return;
+    }
+
+    const int original_goal_x = goal_x;
+    const int original_goal_y = goal_y;
+    goal_x = recovered_goal->first;
+    goal_y = recovered_goal->second;
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Target pose cell is occupied/unknown at (x=%d y=%d), using nearby traversable goal (x=%d y=%d, goal_threshold=%.2f)",
+      original_goal_x, original_goal_y, goal_x, goal_y, goal_obstacle_distance_threshold);
   }
 
   std::vector<std::vector<bool>> closed(width, std::vector<bool>(height, false));
@@ -206,20 +322,27 @@ void TrajectoryGenerator::costmap_callback(const nvblox_msgs::msg::DistanceMapSl
     for (auto & d : directions) {
       int nx = curr->x + d.first;
       int ny = curr->y + d.second;
-      if (nx < 0 || ny < 0 || nx >= width || ny >= height) {
+      if (!is_cell_traversable(nx, ny, obstacle_distance_threshold)) {
         continue;
       }
-      const size_t idx =
-        static_cast<size_t>(ny) * static_cast<size_t>(width) + static_cast<size_t>(nx);
-      if (idx >= msg->data.size()) {
-        continue;
+
+      // Block diagonal corner-cutting through obstacle corners.
+      if (d.first != 0 && d.second != 0) {
+        const int side_x = curr->x + d.first;
+        const int side_y = curr->y;
+        const int side2_x = curr->x;
+        const int side2_y = curr->y + d.second;
+        if (!is_cell_traversable(side_x, side_y, obstacle_distance_threshold) ||
+          !is_cell_traversable(side2_x, side2_y, obstacle_distance_threshold))
+        {
+          continue;
+        }
       }
-      if (msg->data[idx] == unknown || msg->data[idx] < 0.3F) {
-        continue;
-      }
+
       if (closed[nx][ny]) {
         continue;
       }
+
       float g = curr->g + std::hypot(static_cast<float>(d.first), static_cast<float>(d.second));
       float h = std::hypot(goal_x - nx, goal_y - ny);
       open.push(new AStarNode(nx, ny, g, h, curr));
@@ -245,9 +368,10 @@ void TrajectoryGenerator::costmap_callback(const nvblox_msgs::msg::DistanceMapSl
       path_points.back() = {goal_wx, goal_wy};
     }
   } else {
-    RCLCPP_WARN(this->get_logger(), "A* failed to find a path, publishing straight-line fallback");
-    path_points.push_back({start_wx, start_wy});
-    path_points.push_back({goal_wx, goal_wy});
+    RCLCPP_WARN(
+      this->get_logger(),
+      "A* failed to find a collision-free path, skipping trajectory publish");
+    return;
   }
   debug_endpoint_path_pub_->publish(points_to_path(path_points, msg->header));
 

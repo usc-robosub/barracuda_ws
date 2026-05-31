@@ -11,7 +11,7 @@ class PoseToTransformNode(Node):
         super().__init__("pose_to_transform")
         self.declare_parameter("pose_topic", "zed_node/pose")
         self.declare_parameter("transform_topic", "transform")
-        self.declare_parameter("child_frame_id", "barracuda_camera_center")
+        self.declare_parameter("child_frame_id", "barracuda/zedm_camera_center")
 
         pose_topic = self.get_parameter("pose_topic").get_parameter_value().string_value
         transform_topic = (

@@ -1,7 +1,7 @@
 # Nav2 MPPI navigation parameters for Barracuda AUV.
 # Coordinate frame assumptions:
 #   global_frame: map        (nvblox publishes in map frame)
-#   robot_base_frame: base_link
+#   robot_base_frame: barracuda/base_link
 #   odom_frame: odom
 # The vehicle is small and operates in 3-DOF horizontal plane for now.
 
@@ -13,7 +13,7 @@ bt_navigator:
   ros__parameters:
     use_sim_time: false
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: barracuda/base_link
     odom_topic: /odometry/filtered
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -184,7 +184,7 @@ behavior_server:
     wait:
       plugin: "nav2_behaviors/Wait"
     global_frame: odom
-    robot_base_frame: base_link
+    robot_base_frame: barracuda/base_link
     transform_timeout: 0.1
     use_sim_time: false
     simulate_ahead_time: 2.0
@@ -199,7 +199,7 @@ local_costmap:
       update_frequency: 5.0
       publish_frequency: 2.0
       global_frame: odom
-      robot_base_frame: base_link
+      robot_base_frame: barracuda/base_link
       rolling_window: true
       width: 6
       height: 6
@@ -225,7 +225,7 @@ global_costmap:
       update_frequency: 1.0
       publish_frequency: 1.0
       global_frame: map
-      robot_base_frame: base_link
+      robot_base_frame: barracuda/base_link
       rolling_window: true
       width: 20
       height: 20
