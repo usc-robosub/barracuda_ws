@@ -26,7 +26,7 @@ class DvlSample:
 
 
 @dataclass
-class PoseSample:
+class CameraRelativePoseSample:
     stamp_sec: float
-    position_xyz: tuple[float, float, float]
+    translation_xyz: tuple[float, float, float]
     orientation_xyzw: tuple[float, float, float, float]

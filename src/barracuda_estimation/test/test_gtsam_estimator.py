@@ -1,9 +1,4 @@
-"""
-Tests for the current pose-only GtsamEstimator path.
-
-These tests run without the real GTSAM package by patching in a lightweight
-stub before importing the estimator modules.
-"""
+"""Tests for the IMU + depth + DVL GtsamEstimator path."""
 
 from __future__ import annotations
 
@@ -55,6 +50,11 @@ def _make_gtsam_stub():
             q.z.return_value = 0.0
             q.w.return_value = 1.0
             rot = MagicMock()
+            rot.matrix.return_value = [
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+            ]
             rot.toQuaternion.return_value = q
             return rot
 
@@ -70,35 +70,52 @@ def _make_gtsam_stub():
     g.NonlinearFactorGraph.return_value = MagicMock(name="Graph")
     g.Values.return_value = MagicMock(name="Values")
     g.PriorFactorPose3.return_value = MagicMock(name="PriorFactorPose3")
+    g.PriorFactorVector.return_value = MagicMock(name="PriorFactorVector")
+    g.PriorFactorConstantBias.return_value = MagicMock(name="PriorFactorConstantBias")
+    g.CombinedImuFactor.return_value = MagicMock(name="CombinedImuFactor")
     g.BetweenFactorPose3.return_value = MagicMock(name="BetweenFactorPose3")
+    g.imuBias.ConstantBias.return_value = MagicMock(
+        name="ConstantBias",
+        accelerometer=MagicMock(return_value=[0.0, 0.0, 0.0]),
+        gyroscope=MagicMock(return_value=[0.0, 0.0, 0.0]),
+    )
+    g.PreintegratedCombinedMeasurements.return_value = MagicMock(
+        name="PreintegratedCombinedMeasurements"
+    )
+    g.PreintegrationCombinedParams.MakeSharedU.return_value = MagicMock(
+        name="PreintegrationCombinedParams"
+    )
+    g.noiseModel.Isotropic.Sigma.return_value = MagicMock(name="IsoNoise")
 
-    class FakeGPSFactor:
+    class FakeCustomFactor:
         instances = []
 
-        def __init__(self, key, point, noise):
-            self.key = key
-            self.point = point
+        def __init__(self, noise, keys, error_func):
             self.noise = noise
-            FakeGPSFactor.instances.append(self)
+            self.keys = list(keys)
+            self.error_func = error_func
+            FakeCustomFactor.instances.append(self)
 
-    g.GPSFactor.side_effect = FakeGPSFactor
+    g.CustomFactor.side_effect = FakeCustomFactor
 
     result = MagicMock(name="Result")
     result.atPose3.return_value = FakePose3(rot3, FakePoint3(1.0, 2.0, -3.0))
+    result.atVector.return_value = [0.4, 0.5, 0.6]
+    result.atConstantBias.return_value = g.imuBias.ConstantBias.return_value
     optimizer = MagicMock(name="Optimizer")
     optimizer.optimize.return_value = result
     g.LevenbergMarquardtOptimizer.return_value = optimizer
 
-    return g, symbol_shorthand, FakeGPSFactor
+    return g, symbol_shorthand, FakeCustomFactor
 
 
-def _pose(x=1.0, y=2.0, z=3.0, qx=0.0, qy=0.0, qz=0.0, qw=1.0):
-    from barracuda_estimation.measurement_types import PoseSample
+def _imu(ax=0.0, ay=0.0, az=9.81, gx=0.0, gy=0.0, gz=0.0, stamp=0.0):
+    from barracuda_estimation.measurement_types import ImuSample
 
-    return PoseSample(
-        stamp_sec=0.0,
-        position_xyz=(x, y, z),
-        orientation_xyzw=(qx, qy, qz, qw),
+    return ImuSample(
+        stamp_sec=stamp,
+        linear_accel=(ax, ay, az),
+        angular_vel=(gx, gy, gz),
     )
 
 
@@ -124,16 +141,26 @@ def _dvl(
     )
 
 
-def _depth(z_value=3.5):
+def _depth(z_value=3.5, source="range"):
     from barracuda_estimation.measurement_types import DepthSample
 
-    return DepthSample(stamp_sec=0.0, z_value=z_value, source="range")
+    return DepthSample(stamp_sec=0.0, z_value=z_value, source=source)
+
+
+def _camera_relative_pose(tx=0.2, ty=0.0, tz=0.0, qx=0.0, qy=0.0, qz=0.0, qw=1.0):
+    from barracuda_estimation.measurement_types import CameraRelativePoseSample
+
+    return CameraRelativePoseSample(
+        stamp_sec=0.0,
+        translation_xyz=(tx, ty, tz),
+        orientation_xyzw=(qx, qy, qz, qw),
+    )
 
 
 class TestGtsamEstimator(unittest.TestCase):
     def setUp(self):
-        self.gtsam_stub, self.symbols_stub, self.fake_gps_factor = _make_gtsam_stub()
-        self.fake_gps_factor.instances.clear()
+        self.gtsam_stub, self.symbols_stub, self.fake_custom_factor = _make_gtsam_stub()
+        self.fake_custom_factor.instances.clear()
 
     def _make_estimator(self):
         with patch.dict(
@@ -143,55 +170,85 @@ class TestGtsamEstimator(unittest.TestCase):
                 "gtsam.symbol_shorthand": self.symbols_stub,
             },
         ):
-            import barracuda_estimation.factor_graph as factor_graph_mod
             import barracuda_estimation.gtsam_estimator as estimator_mod
 
-            importlib.reload(factor_graph_mod)
             importlib.reload(estimator_mod)
             return estimator_mod.GtsamEstimator()
 
-    def test_is_ready_requires_pose_and_depth_but_not_dvl(self):
+    def test_is_ready_requires_imu_depth_and_dvl(self):
         est = self._make_estimator()
         self.assertFalse(est.is_ready())
-        est.add_pose(_pose())
+        est.add_imu(_imu())
         self.assertFalse(est.is_ready())
         est.add_depth(_depth())
+        self.assertFalse(est.is_ready())
+        est.add_dvl(_dvl())
         self.assertTrue(est.is_ready())
 
-    def test_pose_guess_comes_from_pose_sample(self):
+    def test_initial_pose_guess_comes_from_dvl_sample(self):
         est = self._make_estimator()
-        est.add_pose(_pose(x=4.0, y=5.0, z=6.0, qx=0.1, qy=0.2, qz=0.3, qw=0.9))
+        est.add_dvl(_dvl(x=4.0, y=5.0, z=6.0, qx=0.1, qy=0.2, qz=0.3, qw=0.9))
 
-        est._pose3_initial_guess()
+        est._dvl_to_initial_pose3()
 
         point_args = self.gtsam_stub.Point3.call_args[0]
         quat_args = self.gtsam_stub.Rot3.Quaternion.call_args[0]
         self.assertEqual(point_args, (4.0, 5.0, 6.0))
         self.assertEqual(quat_args, (0.9, 0.1, 0.2, 0.3))
 
-    def test_step_runs_without_dvl(self):
+    def test_step_clears_imu_buffer_after_estimate(self):
         est = self._make_estimator()
-        est.add_pose(_pose())
+        est.add_imu(_imu(stamp=0.0))
+        est.add_imu(_imu(stamp=0.1))
         est.add_depth(_depth())
+        est.add_dvl(_dvl())
 
         estimate = est.step(1.0)
+        est.add_imu(_imu(stamp=0.2))
+        est.add_imu(_imu(stamp=0.3))
+        est.add_depth(_depth())
+        est.add_dvl(_dvl())
+        estimate = est.step(2.0)
 
         self.assertIsNotNone(estimate)
-        self.assertEqual(estimate.velocity_xyz, (0.0, 0.0, 0.0))
+        self.assertEqual(len(est.imu_buffer), 0)
+        self.assertEqual(estimate.velocity_xyz, (0.4, 0.5, 0.6))
+        self.gtsam_stub.CombinedImuFactor.assert_called()
 
-    def test_depth_factor_uses_depth_measurement(self):
+    def test_camera_relative_pose_adds_between_factor(self):
         est = self._make_estimator()
-        est.add_pose(_pose(x=1.0, y=2.0, z=8.0))
+        est.add_imu(_imu(stamp=0.0))
+        est.add_depth(_depth())
+        est.add_dvl(_dvl())
+        est.step(1.0)
+
+        est.add_imu(_imu(stamp=0.2))
+        est.add_depth(_depth())
+        est.add_dvl(_dvl())
+        est.add_camera_relative_pose(_camera_relative_pose(tx=0.3, ty=0.1, tz=-0.2))
+        est.step(2.0)
+
+        self.gtsam_stub.BetweenFactorPose3.assert_called()
+
+    def test_altimeter_factor_uses_depth_measurement(self):
+        est = self._make_estimator()
+        est.add_imu(_imu())
         est.add_depth(_depth(z_value=3.5))
+        est.add_dvl(_dvl(x=1.0, y=2.0, z=-3.5))
 
         estimate = est.step(1.0)
 
         self.assertIsNotNone(estimate)
-        self.assertTrue(self.fake_gps_factor.instances)
-        factor = self.fake_gps_factor.instances[-1]
-        self.assertEqual(factor.point._x, 1.0)
-        self.assertEqual(factor.point._y, 2.0)
-        self.assertEqual(factor.point._z, -3.5)
+        self.assertTrue(self.fake_custom_factor.instances)
+        factor = self.fake_custom_factor.instances[0]
+        pose = est._dvl_to_initial_pose3()
+
+        class FakeValues:
+            def atPose3(self, key):
+                return pose
+
+        residual = factor.error_func(None, FakeValues(), None)
+        self.assertEqual(float(residual[0]), 0.0)
 
 
 if __name__ == "__main__":
