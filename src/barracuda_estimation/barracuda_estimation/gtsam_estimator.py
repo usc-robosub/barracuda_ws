@@ -59,6 +59,7 @@ class GtsamEstimator:
         self.depth_sigma_min = 0.01
         self.altimeter_floor_z_world = 0.0
         self.altimeter_low_dynamics_speed_mps = 0.1
+        self.altimeter_max_angle_from_vertical_rad = np.deg2rad(30.0)
         self.altimeter_boresight_body = self._normalize_vector(
             np.array([0.0, 0.0, 1.0], dtype=float)
         )
@@ -339,12 +340,11 @@ class GtsamEstimator:
 
     def _altimeter_factor(self, key_index: int, pose) -> Any:
         """
-        Return the current altimeter/depth factor.
+        Return the current altimeter factor.
 
-        When the depth source is a range sensor, this models the expected beam
-        range to a known floor plane using the vehicle pose and altimeter
-        boresight. For other depth sources, it falls back to the package's
-        simpler absolute-depth interpretation.
+        The active sensor path is a range sensor. This factor models the
+        expected beam range to a known floor plane using the vehicle pose and
+        the altimeter boresight direction in the body frame.
         """
         assert self.latest_depth is not None
         keys = gtsam.KeyVector()
@@ -353,10 +353,8 @@ class GtsamEstimator:
             1, self._depth_sigma_for_measurement(self.latest_depth)
         )
 
-        if self.latest_depth.source == "range":
-            boresight_world = pose.rotation().matrix() @ self.altimeter_boresight_body
-            if abs(float(boresight_world[2])) < 1e-6:
-                return None
+        if not self._altimeter_beam_is_valid(pose):
+            return None
 
         def error_func(this, values, jacobians):
             test_pose = values.atPose3(X(key_index))
@@ -390,17 +388,22 @@ class GtsamEstimator:
     def _altimeter_residual_from_pose(self, pose) -> float:
         assert self.latest_depth is not None
 
-        boresight_world = pose.rotation().matrix() @ self.altimeter_boresight_body
-        denominator = float(boresight_world[2])
-        if abs(denominator) < 1e-6:
+        boresight_world_z = self._altimeter_boresight_world_z(pose)
+        if boresight_world_z is None:
             return 0.0
 
-        expected_range = (self.altimeter_floor_z_world - float(pose.z())) / denominator
+        expected_range = (self.altimeter_floor_z_world - float(pose.z())) / boresight_world_z
         return expected_range - float(self.latest_depth.z_value)
 
     def _finite_difference_pose_jacobian(
         self, error_fn, pose, residual_dim: int, eps: float = 1e-6
     ) -> np.ndarray:
+        """
+        Compute a numerical Jacobian of a pose-dependent error function.
+
+        Uses a central-difference approximation in the 6D Pose3 tangent space
+        and returns the matrix expected by GTSAM custom factors.
+        """
         jacobian = np.zeros((residual_dim, 6), dtype=float)
         for col in range(6):
             delta = np.zeros(6, dtype=float)
@@ -471,3 +474,20 @@ class GtsamEstimator:
         if norm <= 0.0:
             raise ValueError("Altimeter boresight vector must be non-zero.")
         return vector / norm
+
+    def _altimeter_beam_is_valid(self, pose) -> bool:
+        boresight_world_z = self._altimeter_boresight_world_z(pose)
+        if boresight_world_z is None:
+            return False
+
+        min_vertical_component = float(
+            np.cos(self.altimeter_max_angle_from_vertical_rad)
+        )
+        return abs(boresight_world_z) >= min_vertical_component
+
+    def _altimeter_boresight_world_z(self, pose) -> Optional[float]:
+        boresight_world = pose.rotation().matrix() @ self.altimeter_boresight_body
+        boresight_world_z = float(boresight_world[2])
+        if abs(boresight_world_z) < 1e-6:
+            return None
+        return boresight_world_z

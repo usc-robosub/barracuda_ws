@@ -8,6 +8,8 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
+import numpy as np
+
 THIS_DIR = os.path.dirname(__file__)
 PACKAGE_ROOT = os.path.abspath(os.path.join(THIS_DIR, ".."))
 if PACKAGE_ROOT not in sys.path:
@@ -249,6 +251,39 @@ class TestGtsamEstimator(unittest.TestCase):
 
         residual = factor.error_func(None, FakeValues(), None)
         self.assertEqual(float(residual[0]), 0.0)
+
+class TestIcpFrontend(unittest.TestCase):
+    def test_nearest_neighbor_rejection_keeps_source_target_rows_aligned(self):
+        from barracuda_estimation.icp_frontend import IcpFrontend, IcpFrontendConfig
+
+        frontend = IcpFrontend(IcpFrontendConfig(correspondence_distance=0.3))
+        target_points = np.asarray(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+            ],
+            dtype=float,
+        )
+        transformed_source = np.asarray(
+            [
+                [0.02, 0.01, 0.0],
+                [1.01, -0.01, 0.0],
+                [0.01, 1.02, 0.0],
+                [5.0, 5.0, 5.0],
+            ],
+            dtype=float,
+        )
+
+        matched_source, matched_target, mean_error = frontend._nearest_neighbors(
+            target_points, transformed_source
+        )
+
+        self.assertIsNotNone(matched_source)
+        self.assertIsNotNone(matched_target)
+        self.assertLess(mean_error, 0.1)
+        self.assertEqual(matched_source.shape, matched_target.shape)
+        self.assertEqual(matched_source.shape[0], 3)
 
 
 if __name__ == "__main__":

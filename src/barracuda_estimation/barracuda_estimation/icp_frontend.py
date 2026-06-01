@@ -111,14 +111,14 @@ class IcpFrontend:
 
         for _ in range(self.config.max_iterations):
             transformed_source = (rotation @ source_points.T).T + translation
-            matched_target, mean_error = self._nearest_neighbors(
+            matched_source, matched_target, mean_error = self._nearest_neighbors(
                 target_points, transformed_source
             )
-            if matched_target is None:
+            if matched_source is None or matched_target is None:
                 return None
 
             delta_rotation, delta_translation = self._best_fit_transform(
-                transformed_source, matched_target
+                matched_source, matched_target
             )
             rotation = delta_rotation @ rotation
             translation = delta_rotation @ translation + delta_translation
@@ -134,8 +134,9 @@ class IcpFrontend:
 
     def _nearest_neighbors(
         self, target_points: np.ndarray, transformed_source: np.ndarray
-    ) -> tuple[Optional[np.ndarray], float]:
+    ) -> tuple[Optional[np.ndarray], Optional[np.ndarray], float]:
         """Match each transformed source point to the closest target point."""
+        matched_source: list[np.ndarray] = []
         matched: list[np.ndarray] = []
         distances: list[float] = []
         max_sq = self.config.correspondence_distance**2
@@ -147,13 +148,18 @@ class IcpFrontend:
             best_sq = float(squared_distances[best_idx])
             if best_sq > max_sq:
                 continue
+            matched_source.append(source_point)
             matched.append(target_points[best_idx])
             distances.append(best_sq)
 
-        if len(matched) < 3:
-            return None, float("inf")
+        if len(matched_source) < 3:
+            return None, None, float("inf")
 
-        return np.asarray(matched, dtype=float), float(np.sqrt(np.mean(distances)))
+        return (
+            np.asarray(matched_source, dtype=float),
+            np.asarray(matched, dtype=float),
+            float(np.sqrt(np.mean(distances))),
+        )
 
     def _best_fit_transform(
         self, source_points: np.ndarray, target_points: np.ndarray
