@@ -6,6 +6,7 @@ Python `ament_python` package. ROS2 Humble. Intended to run in the Barracuda Doc
 
 - Build and run inside the Barracuda ROS2 workspace after sourcing the workspace environment.
 - Always try to run `ruff` on Python changes when it is available.
+- Package-local `ruff` config lives in `pyproject.toml`.
 - Prefer readable code over clever code:
   - keep functions small and direct
   - use descriptive variable names
@@ -47,6 +48,9 @@ ros2 run barracuda_thermal_warning jetson_thermal_warning
 
 # Lint Python changes when available:
 ruff check src/barracuda_thermal_warning
+
+# Optionally format after reviewing changes:
+ruff format src/barracuda_thermal_warning
 ```
 
 ## Topic wiring
