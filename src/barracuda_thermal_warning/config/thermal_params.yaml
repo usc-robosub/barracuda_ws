@@ -1,0 +1,9 @@
+/**:
+  ros__parameters:
+    poll_rate_hz: 1.0
+    warning_temp_c: 70.0
+    critical_temp_c: 80.0
+    zone_name_filter: ""
+    status_topic: "jetson/thermal_status"
+    overheat_topic: "jetson/overheat_warning"
+    max_temp_topic: "jetson/max_temperature_c"
